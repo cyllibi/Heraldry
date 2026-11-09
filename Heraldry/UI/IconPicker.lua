@@ -58,11 +58,14 @@ local function Matches(query, ...)
     return false
 end
 
+-- Library search matches the start of words in names and tags ("ice" finds Ice cube, not
+-- Jeweled chalice); the text is folded once per entry by Icons.
 local function LibraryItems(query)
     local items = {}
+    local category = state.category
     for _, entry in ipairs(Icons:GetLibrary()) do
-        local tags = entry.tags and table.concat(entry.tags, " ")
-        if Matches(query, entry.name, entry.key, tags) then
+        if (not category or entry.category == category)
+            and (query == "" or Icons.MatchesWords(Icons.LibrarySearchText(entry), query)) then
             items[#items + 1] = "lib:" .. entry.key
         end
     end
@@ -82,9 +85,19 @@ local function TwitchItems(query)
     return items
 end
 
--- Emote packs and their folders, for the category dropdown (rebuilt when packs change).
-local categoryOptions
-local function TwitchCategories()
+-- The category dropdown: library themes on the Library tab, emote packs and their folders
+-- on the Twitch tab (rebuilt when packs change).
+local categoryOptions, libraryCategoryOptions
+local function CategoryOptions()
+    if state.tab == "lib" then
+        if not libraryCategoryOptions then
+            libraryCategoryOptions = { { value = false, text = L.PICKER_ALL_CATEGORIES } }
+            for _, category in ipairs(Icons:GetLibraryCategories()) do
+                libraryCategoryOptions[#libraryCategoryOptions + 1] = { value = category, text = category }
+            end
+        end
+        return libraryCategoryOptions
+    end
     if not categoryOptions then
         categoryOptions = { { value = false, text = L.PICKER_ALL_CATEGORIES } }
         local _, categories = Icons:GetTwitchEmotes()
@@ -93,6 +106,11 @@ local function TwitchCategories()
         end
     end
     return categoryOptions
+end
+
+local function HasCategories()
+    if state.tab == "lib" then return #Icons:GetLibraryCategories() > 0 end
+    return state.tab == "twitch"
 end
 
 local function CustomItems(query)
@@ -377,12 +395,14 @@ local function Refill()
     window.Grids[tab.grid]:SetItems(rows, EmptyText())
     window.Hint:SetText(tab.hint)
     window.CustomLink:SetShown(state.tab == "custom")
-    window.Category:SetShown(state.tab == "twitch")
-    if state.tab == "twitch" then window.Category:Refresh() end
+    window.Category:SetShown(HasCategories())
+    if HasCategories() then window.Category:Refresh() end
     window.Progress:SetShown(state.tab == "game" and GameIcons:IsIndexing())
 end
 
 local function SetTab(id)
+    -- Category keys belong to one tab: a library theme means nothing on the Twitch tab.
+    if state.tab ~= id then state.category = nil end
     state.tab = id
     for _, tab in ipairs(window.Tabs) do
         local selected = tab.id == id
@@ -512,7 +532,7 @@ local function CreateWindow()
     end)
     window.Search = search
 
-    window.Category = Widgets.Dropdown(window, nil, 150, TwitchCategories,
+    window.Category = Widgets.Dropdown(window, nil, 150, CategoryOptions,
         function() return state.category or false end,
         function(value)
             state.category = value or nil

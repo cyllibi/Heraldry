@@ -249,9 +249,13 @@ def write_tga(path, width, height, rgba_rows):
         pixels = bytearray(row)
         pixels[0::4], pixels[2::4] = row[2::4], row[0::4]   # RGBA -> BGRA
         body += pixels
-    data = header + bytes(body)
-    # Unchanged files are left alone: the running game may hold them open (Windows then
-    # refuses to replace them), and an untouched file needs no game restart.
+    write_file(path, header + bytes(body))
+
+
+def write_file(path, data):
+    """Writes a texture safely. Unchanged files are left alone: the running game may hold
+    them open (Windows then refuses to replace them), and an untouched file needs no game
+    restart."""
     if os.path.isfile(path):
         with open(path, "rb") as handle:
             if handle.read() == data:
@@ -310,6 +314,8 @@ def manifest_entry(fields):
     lines = ["    {"]
     for key in ("key", "name", "file", "shape"):
         lines.append(f"        {key} = {lua_string(fields[key])},")
+    if fields.get("category"):
+        lines.append(f"        category = {lua_string(fields['category'])},")
     lines.append(f"        width = {fields['width']}, height = {fields['height']}, "
                  f"texWidth = {fields['texWidth']}, texHeight = {fields['texHeight']},")
     if fields.get("tags"):

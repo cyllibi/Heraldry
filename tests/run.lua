@@ -510,6 +510,42 @@ test("rules remember who was seen", function()
     eq(Rules:WasSeen("players", "never seen"), false)
 end)
 
+test("library search matches the start of words in names and tags", function()
+    local entry = { key = "gi_crowned_skull", name = "Crowned skull", tags = { "undead", "lich king", "death-knight" } }
+    local text = Icons.LibrarySearchText(entry)
+    truthy(Icons.MatchesWords(text, "skull"), "a word of the name")
+    truthy(Icons.MatchesWords(text, "crow"), "a word start")
+    truthy(Icons.MatchesWords(text, "lich ki"), "every query word must start a word")
+    truthy(Icons.MatchesWords(text, "death knight"), "hyphenated tags match with a space")
+    truthy(Icons.MatchesWords(text, "death-knight"), "and with the hyphen typed")
+    truthy(Icons.MatchesWords(Icons.LibrarySearchText({ name = "Two-handed sword" }), "two-handed"),
+        "a hyphenated name typed as shown")
+    truthy(Icons.MatchesWords(text, "crow-"), "a trailing hyphen doesn't stop the match")
+    eq(Icons.MatchesWords(text, "rown"), false, "not the middle of a word")
+    eq(Icons.MatchesWords(text, "gi_crowned"), false, "the key is not searched")
+    eq(Icons.MatchesWords(text, "skull frost"), false, "all words must match")
+    eq(Icons.LibrarySearchText(entry), text, "folded once")
+end)
+
+test("library categories are validated and listed in manifest order", function()
+    local base = { key = "x", name = "X", file = "x", shape = "square", width = 64, height = 64,
+        texWidth = 64, texHeight = 64, credit = { source = "s", license = "CC0-1.0" } }
+    base.category = "Weapons"
+    truthy(Icons.ValidateLibraryEntry(base))
+    base.category = ""
+    eq(Icons.ValidateLibraryEntry(base), nil, "an empty category is refused")
+    base.category = 3
+    eq(Icons.ValidateLibraryEntry(base), nil, "a category must be a string")
+    local categories = Icons:GetLibraryCategories()
+    truthy(#categories > 1, "the shipped library has categories")
+    local seen = {}
+    for _, category in ipairs(categories) do
+        eq(seen[category], nil, "listed once: " .. category)
+        seen[category] = true
+    end
+    eq(categories[1], Icons:GetLibrary()[1].category, "manifest order")
+end)
+
 test("the minimap button state is repaired and kept", function()
     local ui = DB.NormalizeUI({ minimap = { hide = "yes", minimapPos = 200 } })
     eq(ui.minimap.hide, false, "only true hides")

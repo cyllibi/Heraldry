@@ -7,7 +7,8 @@ in tools\\.cache\\game-icons), and for each one:
   * fills enclosed transparent areas (the checks on a shield, a griffin cut out of one)
     with black, so they read as solid shapes instead of showing the ground through
   * adds a round black outline, thick enough to survive scaling down to a nameplate
-  * trims, fits into 128x128 and writes a 32-bit TGA to Heraldry\\media\\library\\game-icons\\
+  * trims, fits into 128x128 and writes a DXT5 BLP with mipmaps (tools\\blp.py) to
+    Heraldry\\media\\library\\game-icons\\
 
 then rewrites the block between "-- @game-icons-begin" and "-- @game-icons-end" in
 Heraldry\\Library.lua, and writes the add-on's own icon (Heraldry\\media\\heraldry.tga,
@@ -32,6 +33,7 @@ import tempfile
 from collections import deque
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import blp  # noqa: E402  (DXT5 BLP writer)
 import emote2lib  # noqa: E402  (shared TGA writer, fitting and manifest formatting)
 
 REPO = emote2lib.REPO
@@ -44,7 +46,8 @@ BEGIN, END = "-- @game-icons-begin", "-- @game-icons-end"
 
 SOURCE_SIZE = 512
 OUTLINE = 48            # outline radius at 512 px: about 10 px at 128, 1.5 px on a 20 px nameplate icon
-BOX = 128
+BOX = 128               # picker cells are 40 UI units, 56-112 screen px from 1080p to 4K: 128 stays sharp.
+                        # Stored as DXT5 BLP (1 byte per pixel, compressed in video memory too): ~23 KB each.
 BRAND = "lorc/checked-shield"
 BRAND_COLOUR = "e8c252"  # gold for the add-on's own icon only; library icons stay black and white
 BRAND_SIZE = 64
@@ -59,13 +62,22 @@ class ListError(Exception):
     pass
 
 
+# game-icons.net tags that say nothing a player would search for.
+STOP_TAGS = {"gui", "state", "action", "block", "object", "symbol", "anatomy", "household", "office",
+             "australia", "world wars", "stone age", "civilization", "electronic", "circus", "france",
+             "egypt", "celtic", "board", "toy", "map", "clothing", "body"}
+
+
 def read_list(path=LIST):
-    """Returns entries: dicts with path, author, name, key, title and tags."""
-    entries, keys, tags = [], {}, []
+    """Returns entries: dicts with path, author, name, key, title, category and tags."""
+    entries, keys, tags, category = [], {}, [], None
     with open(path, encoding="utf-8") as handle:
         for number, raw in enumerate(handle, 1):
             line = raw.strip()
             if not line or line.startswith("#"):
+                continue
+            if line.startswith("{") and line.endswith("}"):
+                category = line[1:-1].strip() or None
                 continue
             if line.startswith("[") and line.endswith("]"):
                 tags = line[1:-1].split()
@@ -78,16 +90,28 @@ def read_list(path=LIST):
             if key in keys:
                 raise ListError(f"game-icons.txt line {number}: key {key} already used on line {keys[key]}")
             keys[key] = number
+            words = []
+            for word in list(tags) + (extra or "").split():
+                word = word.replace("-", " ")
+                if word not in STOP_TAGS and word not in words:
+                    words.append(word)
             entries.append({
                 "path": f"{author}/{name}", "author": author, "name": name, "key": key,
                 "title": title.strip() if title else name.replace("-", " ").capitalize(),
-                "tags": list(tags) + [t for t in (extra or "").split() if t not in tags],
+                "category": category, "tags": words,
             })
     return entries
 
 
+# Authors whose display name (as game-icons.net/about.html spells it) isn't the title-cased folder.
+AUTHOR_NAMES = {"sbed": "sbed", "darkzaitzev": "DarkZaitzev", "priorblue": "PriorBlue",
+                "aussiesim": "Simon", "generalace135": "GeneralAce135", "heavenly-dog": "HeavenlyDog",
+                "spencerdub": "SpencerDub", "seregacthtuf": "SeregaCthtuf", "starseeker": "starseeker",
+                "catsu": "catsu", "rihlsul": "rihlsul", "sparker": "sparker", "guard13007": "Guard13007"}
+
+
 def author_name(folder):
-    return " ".join(part.capitalize() for part in folder.split("-"))
+    return AUTHOR_NAMES.get(folder) or " ".join(part.capitalize() for part in folder.split("-"))
 
 
 def fetch(path):
@@ -196,7 +220,7 @@ def fitted(ffmpeg, rgba, size, box):
 def entry_text(item):
     return emote2lib.manifest_entry({
         "key": item["key"], "name": item["title"], "file": "game-icons/" + item["key"], "shape": "square",
-        "width": BOX, "height": BOX, "texWidth": BOX, "texHeight": BOX, "tags": item["tags"],
+        "category": item.get("category"), "width": BOX, "height": BOX, "texWidth": BOX, "texHeight": BOX, "tags": item["tags"],
         "credit": {"source": "game-icons.net", "author": author_name(item["author"]), "license": LICENSE,
                    "url": PAGE_URL.format(path=item["path"]), "changes": CHANGES},
     })
@@ -236,8 +260,18 @@ def replace_block(text, block):
 
 def stray_textures(entries):
     """Textures in the output folder that no listed icon uses (they would still ship)."""
-    wanted = {item["key"] + ".tga" for item in entries}
+    wanted = {item["key"] + ".blp" for item in entries}
     return sorted(name for name in os.listdir(OUT_DIR) if name not in wanted)
+
+
+def grey_rgba(rows):
+    """The icon's pixels as greyscale RGBA bytes (the art is white and black already;
+    resampling can leave channel differences of a level or two)."""
+    data = bytearray(b"".join(bytes(row) for row in rows))
+    for i in range(0, len(data), 4):
+        level = (data[i] + data[i + 1] + data[i + 2]) // 3
+        data[i] = data[i + 1] = data[i + 2] = level
+    return bytes(data)
 
 
 def build(args):
@@ -249,7 +283,8 @@ def build(args):
     for number, item in enumerate(entries, 1):
         size, rgba = outlined_rgba(ffmpeg, fetch(item["path"]))
         texture, rows = fitted(ffmpeg, rgba, size, BOX)
-        emote2lib.write_tga(os.path.join(OUT_DIR, item["key"] + ".tga"), texture, texture, rows)
+        emote2lib.write_file(os.path.join(OUT_DIR, item["key"] + ".blp"),
+                             blp.encode_grey_dxt5(texture, texture, grey_rgba(rows)))
         print(f"[{number}/{len(entries)}] {item['key']}", file=sys.stderr)
 
     build_brand(ffmpeg)
@@ -286,7 +321,7 @@ def check():
                                   "run tools\\gameicons2lib.py")
     problems = []
     for item in entries:
-        problem = tga_problem(os.path.join(OUT_DIR, item["key"] + ".tga"), BOX)
+        problem = blp.dxt5_problem(os.path.join(OUT_DIR, item["key"] + ".blp"), BOX)
         if problem:
             problems.append(f"{item['key']}: {problem}")
     problem = tga_problem(BRAND_TGA, BRAND_SIZE)

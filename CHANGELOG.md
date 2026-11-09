@@ -20,8 +20,9 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
 - EllesmereUI skinning and a Heraldry section in EllesmereUI's options.
 - Icon picker favorites, recent icons, keyboard navigation, and a preview beside a sample name.
 - "Try on target" on the Display page, and `/heraldry try`.
-- About 150 library icons from game-icons.net: shields, emblems, crowns, weapons, beasts and more, outlined
-  so they read on any ground.
+- About 430 library icons from game-icons.net: shields, emblems, crowns, weapons, beasts, zodiac signs,
+  elements and more, outlined so they read on any ground, sharp at 128 px (compressed BLP), grouped into
+  categories in the picker and searchable by theme, class and role words.
 - A minimap button (LibDBIcon, so minimap button collectors such as MinimapButtonButton pick it up), with
   `/heraldry minimap` to show or hide it.
 - Guild and player name boxes complete names seen on nameplates this session; the Seen lists scroll.

@@ -132,6 +132,9 @@ function Icons.ValidateLibraryEntry(entry)
     if not (IsPositiveInteger(entry.width) and IsPositiveInteger(entry.height)) then return nil, "bad size" end
     if not IsTextureSize(entry.texWidth, entry.texHeight) then return nil, "texture size must be powers of two up to 1024" end
     if entry.tags ~= nil and type(entry.tags) ~= "table" then return nil, "tags must be a list" end
+    if entry.category ~= nil and (type(entry.category) ~= "string" or entry.category == "") then
+        return nil, "category must be a name"
+    end
     if entry.aliases ~= nil and type(entry.aliases) ~= "table" then return nil, "aliases must be a list" end
     if type(entry.credit) ~= "table" or type(entry.credit.source) ~= "string" or type(entry.credit.license) ~= "string" then
         return nil, "credit needs source and license"
@@ -197,6 +200,46 @@ end
 function Icons:GetLibrary()
     if not libraryList then BuildLibrary() end
     return libraryList
+end
+
+-- The library's categories in manifest order (entries without one are left out).
+local libraryCategories
+function Icons:GetLibraryCategories()
+    if not libraryCategories then
+        libraryCategories = {}
+        local seen = {}
+        for _, entry in ipairs(self:GetLibrary()) do
+            local category = entry.category
+            if category and not seen[category] then
+                seen[category] = true
+                libraryCategories[#libraryCategories + 1] = category
+            end
+        end
+    end
+    return libraryCategories
+end
+
+-- Search text for an entry: its name and tags, folded once, hyphens as spaces, padded so
+-- every word starts after a space (" crowned skull undead lich king ").
+local librarySearch = setmetatable({}, { __mode = "k" })
+function Icons.LibrarySearchText(entry)
+    local text = librarySearch[entry]
+    if not text then
+        local words = entry.name .. " " .. table.concat(entry.tags or {}, " ")
+        text = " " .. ns.Identity.Fold((words:gsub("%-", " "))) .. " "
+        librarySearch[entry] = text
+    end
+    return text
+end
+
+-- True when every word of the folded query starts a word of `text` (from LibrarySearchText):
+-- "ice" finds Ice cube and Frost, not Jeweled chalice; "death kn" finds Death knight tags.
+function Icons.MatchesWords(text, query)
+    -- Hyphens count as spaces in the query too ("Two-handed sword", "death-knight").
+    for word in query:gsub("%-", " "):gmatch("[^ ]+") do
+        if not text:find(" " .. word, 1, true) then return false end
+    end
+    return true
 end
 
 local function LibraryPath(entry, file)

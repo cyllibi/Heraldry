@@ -1,7 +1,7 @@
 # Heraldry: design
 
 Heraldry shows an icon next to the names of chosen guilds and players on nameplates.
-It grew out of the Kachow prototype (removed; see git history) and targets **WoW Forever only** (interface `16001`).
+It grew out of an earlier single-guild prototype and targets **WoW Forever only** (interface `16001`).
 The audience is the Kachow guild, distributed through CurseForge.
 
 ## Goal
@@ -117,7 +117,7 @@ Every rule points at an icon id, prefixed by source. In order of importance:
 
 | Source | Id | Notes |
 |---|---|---|
-| **Library** (main feature) | `lib:<key>` | Icons shipped with the add-on, static and animated. Starts with about 150 heraldic and fantasy silhouettes from game-icons.net (CC BY 3.0); emotes whose artists give permission can join later. |
+| **Library** (main feature) | `lib:<key>` | Icons shipped with the add-on, static and animated. Starts with about 430 heraldic, fantasy and symbol silhouettes from game-icons.net (CC BY 3.0); emotes whose artists give permission can join later. |
 | **Game icons** | `game:<fileID>` | Thousands of built-in icons, nothing to ship. |
 | **Twitch Emotes** (optional) | `twitch:<emote>` | Borrowed from the user's own TwitchEmotes add-on and any pack registering into it (TwitchEmotes_Giga, ...), when loaded. Heraldry ships none of that art. |
 | **Custom** (minor, bottom of the page) | `custom:<file>` | Player-supplied files. |
@@ -143,18 +143,35 @@ Click selects, double-click or Enter chooses, arrow keys move (out of combat), E
   height in texture pixels (the grid rarely fills the sheet). Duration is frames / fps. The client runs
   it, so there is no add-on CPU per frame. Animations stop when the icon hides.
 - **Picker memory:** the grid shows static thumbnails; only the hovered cell and the preview animate, and
-  game icon data is released when the picker closes. Each static library icon is a 64 KB texture, loaded
-  the first time its cell is shown; scrolling through all ~145 game-icons loads about 9 MB, which the client
+  game icon data is released when the picker closes. Each game-icons texture is about 23 KB (128x128 DXT5 with
+  mipmaps), loaded the first time its cell is shown; scrolling through all ~430 of them loads about 10 MB, which the client
   keeps cached for the session. Nameplates only load the icons rules use.
 - **Maintainer tooling:** `tools\emote2lib.py` (ffmpeg-based) turns a 7TV emote (by URL or id) or any
   image file or URL (GIF, APNG, PNG, AVIF) into a library texture, thumbnail and manifest entry. Too many
   frames: drop every other frame until the sheet fits. Example: 7TV `01F6MZGCNG000255K4X1K7NTHR` is
   128x128, 198 frames at 25 fps; at 64x64 it fits a 1024x1024 sheet as 16x13 at full speed.
   `tools\credits.py` builds `CREDITS.md` from the manifest.
-- **game-icons.net set:** `tools\game-icons.txt` lists the icons (curated by theme, with search tags);
+- **Finding icons:** each library entry may name a `category` (14 themes for the game-icons set: Shields &
+  heraldry, Weapons, Magic & alchemy, ...), offered in the picker's category dropdown on the Library tab as
+  on the Twitch tab. Search matches the start of words in the name and tags, every query word must match,
+  and hyphens count as spaces ("ice" finds Ice cube, not Jeweled chalice; "death knight" works). Tags carry
+  class, role and spell-school words (healer, tank, frost, shadow, ...). The search text is folded once per
+  entry.
+- **Trademarks:** some icons depict or are named after other companies' marks (Triforce, Super mushroom,
+  MP5, Overmind). The CC BY license covers the art's copyright only; the maintainer decided on 2026-11-09 to
+  ship them as they are.
+- **game-icons.net set:** `tools\game-icons.txt` lists the icons (curated by theme, with search tags; the
+  second half was picked by the maintainer from RPG Awesome's hand-curated selection, with game-icons.net's
+  own tags);
   `tools\gameicons2lib.py` rebuilds them all. The site's white silhouettes vanish on bright ground and fine
   cut-outs vanish at nameplate size, so every icon gets its enclosed transparent areas filled black and a
-  round black outline about 1.5 px wide at a 20 px icon, then is fitted into 128x128. Black and white only.
+  round black outline about 1.5 px wide at a 20 px icon, then is fitted into 128x128. Picker cells are 40
+  UI units (about 56 px at 1080p, 75 px at 1440p, 112 px at 4K) and plate icons can be as large, so 64 px
+  would soften on large screens. The textures are **DXT5 BLP with mipmaps** (`tools\blp.py`, a small
+  encoder for greyscale art; same layout as EllesmereUI's BLPs): about 23 KB each, compressed in video
+  memory too, so the ~430-icon set is about 10 MB where 128 px TGAs would be 28 MB. Checked in WoW Forever
+  on 2026-11-09 next to TGA and palettized BLP. The game finds the file from the manifest's extensionless
+  path. Black and white only; the gold add-on icon stays a TGA.
   Keys are `gi_<name>`; each entry credits the icon's author, links its page and notes the changes, as
   CC BY 3.0 asks.
 - **Development library:** test art that may not ship goes into a separate add-on, `HeraldryDev`

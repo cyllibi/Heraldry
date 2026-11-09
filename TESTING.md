@@ -58,8 +58,14 @@ output of `/heraldry check` with the affected player targeted.
 
 ## Library
 - [ ] The Library tab lists the game-icons set; searching "shield", "wolf" or "crown" finds them, and so do
-      tag words such as "hunter", "bird" and "undead". Each shows
-      a black outline, enclosed areas black (Checked Shield's checks, Griffin Shield's griffin).
+      tag words such as "hunter", "bird", "undead", "healer", "tank", "frost" and "death knight". "ice" finds
+      Ice cube but not Jeweled chalice.
+- [ ] The category dropdown appears on the Library tab with the themes (Shields & heraldry, Weapons, ...);
+      picking one narrows the grid, search works inside it, and switching to Twitch Emotes and back resets it.
+- [ ] Scroll through all ~430 library icons: smooth, no hitch the second time through.
+- [ ] Sharpness at your own UI scale: the picker's large grid, and a plate icon with the Display Size at 3,
+      look crisp (the library is 128 px DXT5 BLP). Each icon shows a black outline and black enclosed
+      areas (Checked Shield's checks, Griffin Shield's griffin); no icon is a green square.
 - [ ] On a 20 px nameplate icon over bright ground (snow, sand), the shape is still readable.
 - [ ] The tooltip credits the author ("By Lorc, from game-icons.net").
 
@@ -209,8 +215,9 @@ that there is never an icon at a hidden Blizzard plate's position.
 - [ ] A bad name (`my icon`, `x_anim2x2_9_10`) shows an error and is not added.
 
 ## Texture checks
-- [ ] TGA orientation: the library textures written by the tool (top-left origin, uncompressed) appear
-      upright, not mirrored or flipped, on plates and in the picker.
+- [ ] Orientation: the library's DXT5 BLPs, the add-on's own TGA icon and emote2lib's TGAs (top-left
+      origin) appear upright, not mirrored or flipped, on plates and in the picker (an asymmetric icon such
+      as Wolf head faces right).
 - [ ] The animated sheet plays all 198 frames in order without showing parts of neighbouring frames or the
       empty bottom of the sheet.
 

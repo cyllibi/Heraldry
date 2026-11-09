@@ -10,6 +10,9 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
 
+import struct  # noqa: E402
+
+import blp  # noqa: E402
 import credits  # noqa: E402
 import emote2lib  # noqa: E402
 import gameicons2lib  # noqa: E402
@@ -171,6 +174,48 @@ class SafeWrites(unittest.TestCase):
         self.assertEqual(tried, ["a.avif", "b.gif"], "a non-decoding error stops the loop")
 
 
+class BlpOutput(unittest.TestCase):
+    def test_dxt5_header_and_mips(self):
+        size = 16
+        data = bytes([200, 200, 200, 255] * size * size)
+        encoded = blp.encode_grey_dxt5(size, size, data)
+        self.assertEqual(encoded[:4], b"BLP2")
+        self.assertEqual(tuple(encoded[8:12]), (2, 8, 7, 1), "DXT, 8-bit alpha, DXT5, mipmaps")
+        self.assertEqual(struct.unpack("<II", encoded[12:20]), (16, 16))
+        sizes = struct.unpack("<16I", encoded[84:148])
+        self.assertEqual(sizes[:5], (256, 64, 16, 16, 16), "16x16, 8x8, 4x4, 2x2 and 1x1 levels")
+        self.assertEqual(struct.unpack("<16I", encoded[20:84])[0], blp.HEADER_SIZE)
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "t.blp")
+            with open(path, "wb") as handle:
+                handle.write(encoded)
+            self.assertIsNone(blp.dxt5_problem(path, size))
+            self.assertIn("expected", blp.dxt5_problem(path, 32))
+            with open(path, "wb") as handle:
+                handle.write(encoded[:-10])
+            self.assertIn("damaged", blp.dxt5_problem(path, size))
+
+    def test_dxt5_block_keeps_black_white_and_alpha(self):
+        # Left half white, right half black; top rows opaque, bottom transparent.
+        pixels = []
+        for y in range(4):
+            for x in range(4):
+                v = 255 if x < 2 else 0
+                pixels += [v, v, v, 255 if y < 2 else 0]
+        block = blp._dxt5_block(bytes(pixels), 4, 4, 0, 0)
+        self.assertEqual(block[:2], bytes((255, 0)), "alpha endpoints")
+        c0, c1, bits = struct.unpack("<HHI", block[8:16])
+        self.assertEqual((c0, c1), (0xFFFF, 0x0000), "pure white and black endpoints, no tint")
+        self.assertEqual(bits & 0b11111111, 0b01010000, "row 1: white, white (index 0), black, black (index 1)")
+
+    def test_grey_565_has_equal_channels(self):
+        for v in range(256):
+            c = blp._rgb565_grey(v)
+            red, green = (c >> 11) & 31, (c >> 5) & 63
+            self.assertEqual(c & 31, red)
+            self.assertLessEqual(abs(red * 255 / 31 - green * 255 / 63), 4.1)
+
+
 class GameIcons(unittest.TestCase):
     def test_enclosed_areas_fill_and_open_ones_do_not(self):
         # 5x5: an opaque ring around one transparent pixel, plus the transparent border.
@@ -205,8 +250,9 @@ class GameIcons(unittest.TestCase):
 
     def test_every_shipped_texture_exists(self):
         for entry in credits.read_manifest(credits.MANIFEST):
-            path = os.path.join(emote2lib.LIBRARY_DIR, *entry["file"].split("/")) + ".tga"
-            self.assertTrue(os.path.isfile(path), entry["key"])
+            # The game finds either format from the extensionless path.
+            base = os.path.join(emote2lib.LIBRARY_DIR, *entry["file"].split("/"))
+            self.assertTrue(os.path.isfile(base + ".blp") or os.path.isfile(base + ".tga"), entry["key"])
 
     def test_markers_mentioned_in_prose_are_ignored(self):
         text = ('--[[ the block between "' + gameicons2lib.BEGIN + '" and "' + gameicons2lib.END + '" ]]\n'
@@ -242,6 +288,18 @@ class GameIcons(unittest.TestCase):
             with open(manifest, encoding="utf-8") as handle:
                 self.assertEqual(handle.read(), original)
             self.assertFalse(os.path.exists(manifest + ".partial"))
+
+    def test_categories_and_stop_tags(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "list.txt")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write("{Weapons}\n[weapon gui]\nlorc/crown | science-fiction symbol weapon stone-age\n"
+                             "{Animals}\nlorc/lion\n")
+            crown, lion = gameicons2lib.read_list(path)
+        self.assertEqual(crown["category"], "Weapons")
+        self.assertEqual(crown["tags"], ["weapon", "science fiction"], "stop tags dropped, hyphens spaced, no repeats")
+        self.assertEqual(lion["category"], "Animals")
+        self.assertIn('category = "Weapons"', gameicons2lib.entry_text(crown))
 
     def test_per_icon_tags_and_names(self):
         with tempfile.TemporaryDirectory() as folder:

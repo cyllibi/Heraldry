@@ -8,7 +8,7 @@
 | `Heraldry/UI/` | Options pages (one file each) and the icon picker. |
 | `Heraldry/Library.lua` | Icon library manifest (format documented at the top). |
 | `Heraldry/Libs/` | LibStub, CallbackHandler, LibDataBroker and LibDBIcon for the minimap button. Gitignored: the packager fetches them (`.pkgmeta` externals). For development, copy those four folders from any installed add-on that embeds them (EnhanceQoL does) or check them out from the URLs in `.pkgmeta`. |
-| `tools/` | Maintainer scripts: `gameicons2lib.py` (the game-icons.net library, from `game-icons.txt`), `emote2lib.py` (single images and 7TV emotes), `credits.py`. |
+| `tools/` | Maintainer scripts: `gameicons2lib.py` (the game-icons.net library, from `game-icons.txt`), `emote2lib.py` (single images and 7TV emotes), `blp.py` (DXT5 BLP writer for greyscale art), `credits.py`. |
 | `tests/` | Headless tests: Lua 5.1 for the add-on, Python for the tools. |
 
 Rules of the code base: everything goes through the add-on namespace (`local addonName, ns = ...`); the only
@@ -44,7 +44,7 @@ py -3 tools\credits.py
 ```
 
 It downloads what's missing (cached in `tools/.cache/`), fills enclosed areas black, adds a black outline,
-writes `Heraldry/media/library/game-icons/<key>.tga` and rewrites the game-icons block of `Library.lua`
+writes `Heraldry/media/library/game-icons/<key>.blp` (128 px DXT5 with mipmaps, by `tools/blp.py`) and rewrites the game-icons block of `Library.lua`
 (and the add-on's own icon, `Heraldry/media/heraldry.tga`). `--check` verifies the block and textures match
 the list. Never remove a shipped line: its key is in players' rules.
 

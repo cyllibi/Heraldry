@@ -5,7 +5,7 @@ Heraldry targets WoW Forever (interface `16001`). Retail is not a goal.
 Heraldry (`Heraldry\`) shows an icon next to the names of guilds and players the user picks, on nameplates.
 Per-player rules override per-guild rules. Icons come from a bundled library (game-icons.net silhouettes,
 filled and outlined; animated icons are supported), built-in game icons, emotes from TwitchEmotes packs, and
-(minor) custom files. It grew out of the Kachow prototype, which is retired (see git history).
+(minor) custom files. It grew out of an earlier single-guild prototype, since retired.
 
 - **Read first:** `DESIGN.md` (authoritative design), `CONTRIBUTING.md` (layout, lint, tests, packaging),
   `TESTING.md` (in-game checklist).
