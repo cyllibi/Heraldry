@@ -24,6 +24,7 @@ Core.lua
 Identity.lua
 Library.lua
 Icons.lua
+IconNames.lua
 GameIcons.lua
 Database.lua
 Matching.lua

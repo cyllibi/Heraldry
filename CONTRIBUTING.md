@@ -48,6 +48,16 @@ writes `Heraldry/media/library/game-icons/<key>.blp` (128 px DXT5 with mipmaps, 
 (and the add-on's own icon, `Heraldry/media/heraldry.tga`). `--check` verifies the block and textures match
 the list. Never remove a shipped line: its key is in players' rules.
 
+**Game icon names** (`Heraldry/IconNames.lua`) come from the community listfile. To pick up icons from a
+newer game patch:
+
+```
+py -3 tools\iconnames.py --refresh
+```
+
+It downloads the verified listfile into `tools/.cache/listfile/` and regenerates the table; `--check` verifies
+the file is in generated form. Without `--refresh` it reuses the cached download.
+
 **Anything else**, one image or 7TV emote at a time:
 
 ```

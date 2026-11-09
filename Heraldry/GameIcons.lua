@@ -2,10 +2,15 @@
   The built-in game icons: the list the macro icon picker shows, and search.
 
   On Forever the macro icon functions return file IDs only; icon file names are not
-  available. Search therefore matches spell names: the first search starts a background
-  scan of spell IDs that records each spell's icon under its name. The scan runs a few
-  milliseconds per frame while it lasts and stops for good once done. Exact file IDs,
-  texture paths, spell names and cached item names also work immediately. ]]
+  available. Names come from two places:
+    * IconNames.lua, labels made from the icons' file names (tools\iconnames.py), parsed
+      the first time the picker or options need a name and released when the picker closes;
+      nameplates never need one
+    * the spell index: the first search starts a background scan of spell IDs that
+      records each spell's icon under its name. The scan runs a few milliseconds per
+      frame while it lasts and stops for good once done.
+  A spell name wins over a file label when both exist. Known file IDs, texture paths,
+  spell names and cached item names also work immediately. ]]
 
 local _, ns = ...
 
@@ -21,8 +26,9 @@ local ICON_PATH_PREFIX = [[Interface\Icons\]]
 local iconList       -- file IDs in macro picker order, built on first use
 local inList = {}    -- file ID -> true
 local extraIcons = {} -- spell icons the macro list lacks, in scan order
-local searchText = {} -- file ID -> folded spell names, "\n"-separated
+local searchText = {} -- file ID -> folded spell names, each word after a space (see Words)
 local labels = {}    -- file ID -> a display name (first spell name or loose file name)
+local fileLabels     -- file ID -> " " .. lower-case label from IconNames.lua, built on first use
 
 local scanState = "idle" -- "idle", "running", "done"
 local scanSpellID, scanMisses = 0, 0
@@ -62,25 +68,65 @@ function GameIcons:GetList()
     return iconList
 end
 
+-- Parses IconNames.lua's "<delta> <label>" lines into a table (about 17 ms and 4 MB) the
+-- first time the picker or the options need a name; ReleaseNames drops the table again.
+local function FileLabels()
+    if not fileLabels then
+        fileLabels = {}
+        local fileID = 0
+        for delta, label in (ns.IconNamesData or ""):gmatch("(%d+) ([^\n]+)") do
+            fileID = fileID + tonumber(delta)
+            fileLabels[fileID] = " " .. label
+        end
+    end
+    return fileLabels
+end
+
+-- Called when the picker closes; the next name parses the table again.
+function GameIcons:ReleaseNames()
+    fileLabels = nil
+end
+
+-- For tests and diagnostics: whether the name table is parsed right now.
+function GameIcons:HasNames()
+    return fileLabels ~= nil
+end
+
+-- Spell name first, then the file name label, then a loose macro icon's raw file name.
 function GameIcons:GetIconName(fileID)
-    return labels[fileID]
+    local label = labels[fileID]
+    if label and searchText[fileID] then return label end
+    local fileLabel = FileLabels()[fileID]
+    if fileLabel then return (fileLabel:gsub("^ (%l?)", string.upper)) end
+    return label
+end
+
+-- True when fileID is an icon Heraldry knows about, not just any number.
+function GameIcons:IsKnownIcon(fileID)
+    self:GetList()
+    return inList[fileID] or FileLabels()[fileID] ~= nil
 end
 
 --------------------------------------------------------------------------------
 -- Spell name index
 --------------------------------------------------------------------------------
+-- " word word": folded, with hyphens as spaces, so search can match the start of each word.
+local function Words(text)
+    return " " .. ns.Identity.Fold(text):gsub("%-", " ")
+end
+
 local function IndexSpell(name, icon)
-    local folded = ns.Identity.Fold(name)
+    local words = Words(name)
     local existing = searchText[icon]
     if not existing then
-        searchText[icon] = folded
-        labels[icon] = labels[icon] or name
+        searchText[icon] = words
+        labels[icon] = name -- the first spell's name beats a loose icon's file name
         if not inList[icon] then
             inList[icon] = true
             extraIcons[#extraIcons + 1] = icon
         end
-    elseif #existing < MAX_NAMES_PER_ICON and not existing:find(folded, 1, true) then
-        searchText[icon] = existing .. "\n" .. folded
+    elseif #existing < MAX_NAMES_PER_ICON and not (existing .. " "):find(words .. " ", 1, true) then
+        searchText[icon] = existing .. words
     end
 end
 
@@ -150,7 +196,9 @@ function GameIcons:Search(query)
 
     local results, seen = {}, {}
     if query:match("^%d+$") then
-        AddUnique(results, seen, tonumber(query))
+        -- Only a real icon: any other number would show the missing-texture square.
+        local fileID = tonumber(query)
+        if self:IsKnownIcon(fileID) then AddUnique(results, seen, fileID) end
         return results
     end
     if query:find("[/\\]") then
@@ -162,12 +210,24 @@ function GameIcons:Search(query)
     AddUnique(results, seen, C_Spell.GetSpellTexture(query))
     AddUnique(results, seen, select(5, C_Item.GetItemInfoInstant(query)))
 
+    -- Then every icon whose spell names or file label have a word starting with each
+    -- query word, as in the library ("ice" finds Ice Lance, not Sacrifice).
     self:StartIndex()
-    local folded = ns.Identity.Fold(query)
+    local words = {}
+    for word in Words(query):gmatch("[^ ]+") do words[#words + 1] = " " .. word end
+    local files = FileLabels()
+    local function HasWords(text)
+        if not text then return false end
+        for _, word in ipairs(words) do
+            if not text:find(word, 1, true) then return false end
+        end
+        return true
+    end
     local function Match(fileID)
-        local names = searchText[fileID]
-        local label = labels[fileID]
-        return (names and names:find(folded, 1, true)) or (label and label:lower():find(folded, 1, true))
+        if HasWords(searchText[fileID]) or HasWords(files[fileID]) then return true end
+        -- A loose macro icon the listfile doesn't name: its raw file name, underscores as spaces.
+        local label = not files[fileID] and labels[fileID]
+        return label and HasWords(Words((label:gsub("_", " ")))) or false
     end
     for _, fileID in ipairs(list) do
         if Match(fileID) then AddUnique(results, seen, fileID) end

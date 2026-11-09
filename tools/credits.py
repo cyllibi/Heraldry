@@ -22,6 +22,11 @@ ADDON_ICON = ("`media/heraldry.tga` (the add-on list, minimap button and add-on 
               "shield\" by Lorc, from game-icons.net, <https://game-icons.net/1x1/lorc/checked-shield.html>, "
               "CC-BY-3.0. Changes: tinted gold, black fill and outline added, resized.")
 
+# Heraldry/IconNames.lua, made by tools/iconnames.py; data, not art, but credited all the same.
+ICON_NAMES = ("`IconNames.lua` (names for the built-in game icons): labels made from World of Warcraft's icon "
+              "file names, as collected by the community listfile, <https://github.com/wowdev/wow-listfile>. "
+              "The file names are Blizzard Entertainment's; this file is not covered by Heraldry's MIT license.")
+
 # Licenses that let the credit link to the license instead of shipping its text.
 LICENSE_LINKS = {
     "CC-BY-3.0": "https://creativecommons.org/licenses/by/3.0/",
@@ -126,6 +131,10 @@ def render(entries):
         "## Heraldry's own icon",
         "",
         ADDON_ICON,
+        "",
+        "## Game icon names",
+        "",
+        ICON_NAMES,
         "",
         "## Library icons",
         "",

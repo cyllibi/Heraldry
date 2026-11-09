@@ -69,6 +69,7 @@ function Diagnostics:Lines()
         local icon, reason = ns.Rules.Match(profile, facts.playerKey, facts.guildKey, facts.nameSecret, inMyGuild)
         local reasonKey = "REASON_" .. reason:upper():gsub("%-", "_")
         Add(L.CHECK_MATCH, L[reasonKey], icon and ns.Icons:Describe(icon) or L.CHECK_NONE)
+        ns.GameIcons:ReleaseNames() -- the label is kept on the spec; the name table isn't needed
     end
 
     local plate = ns.Plates:Describe("target")

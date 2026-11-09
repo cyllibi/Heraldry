@@ -16,6 +16,7 @@ import blp  # noqa: E402
 import credits  # noqa: E402
 import emote2lib  # noqa: E402
 import gameicons2lib  # noqa: E402
+import iconnames  # noqa: E402
 
 
 class SheetMaths(unittest.TestCase):
@@ -320,6 +321,51 @@ class GameIcons(unittest.TestCase):
         entries = credits.Parser(credits.tokenize(once[len("ns.LibraryManifest = "):])).table()
         self.assertEqual(entries[0]["credit"]["license"], "CC-BY-3.0")
         self.assertIn("creativecommons.org/licenses/by/3.0", credits.render(entries))
+
+
+class IconNames(unittest.TestCase):
+    def test_labels_read_as_words(self):
+        self.assertEqual(iconnames.label("INV_Misc_Gem_Ruby_01"), "gem ruby")
+        self.assertEqual(iconnames.label("Spell_Fire_Fireball02"), "fire fireball")
+        self.assertEqual(iconnames.label("INV_Misc_QuestionMark"), "question mark")
+        self.assertEqual(iconnames.label("INV_Leather_PvPDruid_O_01Bracer"), "leather pvp druid bracer")
+        self.assertEqual(iconnames.label("INV_MISC_6oRing_BlueLv3"), "ring blue lv")
+        self.assertEqual(iconnames.label("INV_Misc_Food_94_GaradarSharp "), "food garadar sharp")
+        self.assertIsNone(iconnames.label("INV_10_0_01"))
+        self.assertEqual(iconnames.label("Ability_Druid_TreeofLife"), "druid tree of life")
+        self.assertEqual(iconnames.label("INV_Misc_Hoof"), "hoof")
+        self.assertEqual(iconnames.label("Spell_Holy_PrayerOfMendingtga"), "holy prayer of mending")
+        self.assertEqual(iconnames.label("Ability_Druid_Mangle.tga"), "druid mangle")
+        self.assertEqual(iconnames.label("inv_10xp_worldevent_special"), "worldevent special")
+
+    def test_long_labels_stop_at_a_word(self):
+        text = iconnames.label("_".join(["Abcdefgh"] * 3 + ["Ijklmnop", "Qrstuvwx"] * 4))
+        self.assertLessEqual(len(text), iconnames.MAX_LABEL)
+        self.assertFalse(text.endswith(" "))
+
+    def test_listfile_keeps_only_icons(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "listfile.csv")
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write("132089;Interface/ICONS/Ability_Ambush.blp\n"
+                             "3598764;INTERFACE/ICONS/NewPlayerHelp_Newcomer.m2\n"
+                             "123;World/Maps/Azeroth/Azeroth.wdt\n"
+                             "5149947;Interface/Icons/inv_10xp_worldevent_special_murlocfigure.blp\n")
+            self.assertEqual(iconnames.read_listfile(path),
+                             {132089: "ambush", 5149947: "worldevent special murlocfigure"})
+
+    def test_render_and_parse_round_trip(self):
+        names = {132089: "ambush", 132090: "back stab", 134400: "question mark"}
+        text = iconnames.render(names)
+        self.assertIn("\n132089 ambush\n1 back stab\n2310 question mark\n", text)
+        self.assertEqual(iconnames.parse(text), names)
+
+    def test_damaged_data_is_refused(self):
+        text = iconnames.render({132089: "ambush"}).replace("132089 ambush", "x ambush")
+        with self.assertRaises(emote2lib.ToolError):
+            iconnames.parse(text)
+        with self.assertRaises(emote2lib.ToolError):
+            iconnames.render({1: "bad ]] label"})
 
 
 if __name__ == "__main__":

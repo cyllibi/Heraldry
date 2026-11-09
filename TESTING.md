@@ -76,10 +76,12 @@ output of `/heraldry check` with the affected player targeted.
 - [ ] Library tab shows Dance (dev) and McQueen (dev) with names. Grid cells are still; hovering Dance
       animates it, leaving stops it; the preview at the bottom animates the selection.
 - [ ] Searching "dance" filters the Library tab; clearing it restores the list.
-- [ ] Game icons tab: scrolls smoothly through thousands of icons. Searching a spell name you know
-      ("Fireball", "Heroic Strike") shows its icon at once; a partial word ("fire") shows "Indexing spell
-      names..." progress and fills in results over several seconds. An icon ID (`134400`) and a path
-      (`Interface\Icons\INV_Misc_QuestionMark`) each show that icon.
+- [ ] Game icons tab: scrolls smoothly through thousands of icons. Hovering icons shows names, not
+      "Icon 1234" (item icons read like "Sword", "Gem ruby"). Searching "sword" or "gem" fills the grid at
+      once; searching a spell name you know ("Fireball", "Heroic Strike") shows its icon at once; a partial
+      word ("fire") shows "Indexing spell names..." progress and fills in more results over several seconds;
+      "ice" doesn't find Sacrifice. An icon ID (`134400`) and a path (`Interface\Icons\INV_Misc_QuestionMark`)
+      each show that icon; typing other digits ("1266") shows no icon, never a green square.
 - [ ] Twitch Emotes tab (TwitchEmotes installed): the category dropdown lists packs (BTTV+FFZ, Pepes, ...,
       Giga Twitch Emotes and any other installed pack, by their titles); search by emote name works;
       animated emotes play on hover.

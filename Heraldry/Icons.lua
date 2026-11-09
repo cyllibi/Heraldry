@@ -459,12 +459,22 @@ local function CustomSpec(file)
     return spec
 end
 
+-- A game spec's label is looked up the first time something reads it (the picker, the
+-- options' rule lists), never when a nameplate resolves the icon: naming icons parses
+-- the whole icon name table (GameIcons.lua).
+local gameSpecMeta = {
+    __index = function(spec, key)
+        if key ~= "label" then return nil end
+        local label = ns.GameIcons:GetIconName(spec.texture) or L.GAME_ICON_ID:format(spec.texture)
+        rawset(spec, "label", label)
+        return label
+    end,
+}
+
 local function GameSpec(fileID)
-    return {
-        texture = fileID, coords = GAME_ICON_COORDS, aspect = 1,
-        label = ns.GameIcons:GetIconName(fileID) or L.GAME_ICON_ID:format(fileID),
-        sourceLabel = L.SOURCE_GAME,
-    }
+    return setmetatable({
+        texture = fileID, coords = GAME_ICON_COORDS, aspect = 1, sourceLabel = L.SOURCE_GAME,
+    }, gameSpecMeta)
 end
 
 -- requires: the add-on the icon comes from, when that is why it is missing.

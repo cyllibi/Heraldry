@@ -13,7 +13,7 @@ filled and outlined; animated icons are supported), built-in game icons, emotes 
   plus adapters for Plater, ElvUI and Threat Plates and a generic fallback. 12.x "secret values" restrict
   what add-ons can read on nameplates; never compare or do maths on values that may be secret.
 - **Checks:** `.tools\luacheck.exe .` (0 warnings), `luac5.1 -p` on every file, `.tools\lua51\lua5.1.exe
-  tests\run.lua`, the Python tool tests, `tools\credits.py --check` and `tools\gameicons2lib.py --check`.
+  tests\run.lua`, the Python tool tests, `tools\credits.py --check`, `tools\gameicons2lib.py --check` and `tools\iconnames.py --check`.
   All must pass before committing.
 - **Art rules:** only art with a license or explicit permission ships, credited per library entry. Library
   icons are black and white; only Heraldry's own icon (`media\heraldry.tga`) is gold. Unlicensed test art

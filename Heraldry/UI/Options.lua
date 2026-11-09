@@ -91,6 +91,8 @@ function Options:AddPage(id, title, build)
         if not shown.built then BuildPage(shown) end
         shown:Refresh()
     end)
+    -- Rule rows name game icons; drop the icon name table again (GameIcons.lua).
+    page:SetScript("OnHide", function() ns.GameIcons:ReleaseNames() end)
     pages[id] = page
     return page
 end
@@ -159,6 +161,7 @@ local function BuildPluginPage(pageName, parent, yOffset)
     host.Content:SetPoint("BOTTOMRIGHT", -PAGE_PADDING, PAGE_PADDING)
     source.build(host, host.Content)
     host:SetScript("OnShow", host.Refresh)
+    host:SetScript("OnHide", function() ns.GameIcons:ReleaseNames() end)
     pluginHosts[#pluginHosts + 1] = host
     host:Refresh()
     return PLUGIN_PAGE_HEIGHT - yOffset

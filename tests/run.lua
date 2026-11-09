@@ -7,7 +7,7 @@ local stub = dofile("tests/wowstub.lua")
 
 local ADDON = "Heraldry"
 local FILES = {
-    "Locales/enUS.lua", "Core.lua", "Identity.lua", "Library.lua", "Icons.lua", "GameIcons.lua",
+    "Locales/enUS.lua", "Core.lua", "Identity.lua", "Library.lua", "Icons.lua", "IconNames.lua", "GameIcons.lua",
     "Database.lua", "Matching.lua", "Share.lua", "Plates/Plates.lua",
 }
 
@@ -819,6 +819,62 @@ test("placement: offsets, size and a hidden font size", function()
     eq(bottomRight[4] - topLeft[4], 40, "20 px name x scale 2")
     eq((topLeft[4] + bottomRight[4]) / 2, -(2 + 20) + 5)
     eq((topLeft[5] + bottomRight[5]) / 2, -3)
+end)
+
+--------------------------------------------------------------------------------
+-- Game icons
+--------------------------------------------------------------------------------
+test("game icons: names from the listfile, word-start search and real file IDs only", function()
+    -- The macro list as the client gives it: one loose file name and two file IDs.
+    local saved = { GetLooseMacroIcons, GetLooseMacroItemIcons, GetMacroIcons, GetMacroItemIcons,
+        GetFileIDFromPath, C_Spell, C_Item }
+    GetLooseMacroIcons = function(raw) raw[#raw + 1] = "INV_Misc_QuestionMark" end
+    GetLooseMacroItemIcons, GetMacroItemIcons = function() end, function() end
+    GetMacroIcons = function(raw) raw[#raw + 1] = 132089; raw[#raw + 1] = 9999999 end
+    GetFileIDFromPath = function(path) return path:lower():find("questionmark") and 134400 or nil end
+    C_Spell = { GetSpellTexture = function() return nil end }
+    C_Item = { GetItemInfoInstant = function() return nil end }
+    local GameIcons = ns.GameIcons
+
+    eq(GameIcons:GetIconName(132089), "Ambush", "a label made from Ability_Ambush")
+    eq(GameIcons:GetIconName(134400), "Question mark", "the listfile label beats the loose raw name")
+    eq(GameIcons:GetIconName(9999999), nil, "an icon nobody names")
+    truthy(GameIcons:HasNames(), "naming an icon parses the table")
+    GameIcons:ReleaseNames()
+    eq(GameIcons:HasNames(), false, "released when the picker closes")
+
+    local function ids(query)
+        local found = {}
+        for _, fileID in ipairs(GameIcons:Search(query)) do found[#found + 1] = fileID end
+        return table.concat(found, ",")
+    end
+    eq(ids("ambu"), "132089", "a word start")
+    eq(ids("mbush"), "", "not the middle of a word")
+    eq(ids("question"), "134400", "a loose icon")
+    eq(ids("1266"), "", "a number that isn't a known icon finds nothing")
+    eq(ids("1"), "", "nor does the first digit typed")
+    eq(ids("132089"), "132089", "a known file ID")
+    eq(ids("9999999"), "9999999", "an unnamed icon from the macro list")
+    eq(ids("135817"), "135817", "an icon the listfile names but the macro list lacks")
+    truthy(#GameIcons:Search("") == 3, "an empty query lists the macro icons")
+
+    -- Nameplates resolve icons but never read labels, so they never parse the table.
+    GameIcons:ReleaseNames()
+    Icons:ForgetGameSpecs()
+    local spec = Icons:Resolve("game:132089")
+    eq(spec.texture, 132089, "a game spec resolves")
+    eq(GameIcons:HasNames(), false, "resolving a game icon doesn't parse names")
+    local missing = Icons:Resolve("lib:no_such_icon")
+    truthy(missing.missing, "a missing library icon")
+    eq(GameIcons:HasNames(), false, "nor does a missing icon")
+    eq(spec.label, "Ambush", "the label is looked up when read")
+    eq(Icons:Describe("game:9999999"), L.ICON_DESCRIPTION:format(L.GAME_ICON_ID:format(9999999), L.SOURCE_GAME),
+        "an unnamed icon describes itself by number")
+    GameIcons:ReleaseNames()
+    Icons:ForgetGameSpecs()
+
+    GetLooseMacroIcons, GetLooseMacroItemIcons, GetMacroIcons, GetMacroItemIcons,
+        GetFileIDFromPath, C_Spell, C_Item = unpack(saved, 1, 7)
 end)
 
 --------------------------------------------------------------------------------

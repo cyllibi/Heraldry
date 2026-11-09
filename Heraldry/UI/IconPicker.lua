@@ -618,6 +618,7 @@ local function CreateWindow()
         state.items = {}
         window.Preview.Region:Hide()
         Icons:ForgetGameSpecs()
+        GameIcons:ReleaseNames()
     end)
 
     Skin:OnLooksChanged(function()
