@@ -514,7 +514,7 @@ function Icons:Resolve(id)
 end
 
 -- Game icon specs are cheap to rebuild: dropped when the picker closes (thousands may
--- have been browsed) and when the spell index finishes (their labels improve).
+-- have been browsed).
 function Icons:ForgetGameSpecs()
     for id in pairs(specCache) do
         if Icons.ParseId(id) == "game" then specCache[id] = nil end

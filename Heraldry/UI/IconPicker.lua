@@ -23,7 +23,6 @@ ns.IconPicker = Picker
 
 local WINDOW_WIDTH, WINDOW_HEIGHT = 640, 640
 local SEARCH_DELAY = 0.25           -- seconds of no typing before the grid refilters
-local INDEX_REFRESH_DELAY = 1       -- seconds between grid refreshes while spells index
 local MAX_RECENT = 12               -- icons kept in the Recent row (and shown per row)
 local PREVIEW_FONT_SIZE = 14
 local GRIDS = {
@@ -140,8 +139,6 @@ local function EmptyText()
         return filtering and L.PICKER_NO_MATCHES or L.PICKER_LIBRARY_EMPTY
     elseif state.tab == "custom" then
         return filtering and L.PICKER_NO_MATCHES or L.PICKER_CUSTOM_EMPTY
-    elseif state.tab == "game" and GameIcons:IsIndexing() then
-        return L.PICKER_INDEXING_EMPTY
     end
     return L.PICKER_NO_MATCHES
 end
@@ -234,6 +231,8 @@ local function CellTooltip(cell)
     GameTooltip:SetText(spec.label, 1, 1, 1)
     GameTooltip:AddLine(spec.sourceLabel, nil, nil, nil)
     if spec.category then GameTooltip:AddLine(spec.category, 0.8, 0.8, 0.8) end
+    local others = Icons.ParseId(cell.id) == "game" and GameIcons:GetOtherNames(spec.texture)
+    if others then GameTooltip:AddLine(L.PICKER_ALSO_USED_BY:format(others), 0.8, 0.8, 0.8, true) end
     local entry = spec.entry
     if entry then
         if entry.anim then
@@ -397,7 +396,6 @@ local function Refill()
     window.CustomLink:SetShown(state.tab == "custom")
     window.Category:SetShown(HasCategories())
     if HasCategories() then window.Category:Refresh() end
-    window.Progress:SetShown(state.tab == "game" and GameIcons:IsIndexing())
 end
 
 local function SetTab(id)
@@ -454,17 +452,6 @@ end
 --------------------------------------------------------------------------------
 -- Window
 --------------------------------------------------------------------------------
-local lastIndexRefresh = 0
-local function OnIndexProgress(done)
-    if not (window and window:IsShown() and state.tab == "game") then return end
-    window.Progress:SetText(L.PICKER_INDEXING:format(GameIcons:GetIndexProgress()))
-    local now = GetTime()
-    if done or (state.query ~= "" and now - lastIndexRefresh > INDEX_REFRESH_DELAY) then
-        lastIndexRefresh = now
-        Refill()
-    end
-end
-
 local function OnSearchChanged(box)
     searchGeneration = searchGeneration + 1
     local generation = searchGeneration
@@ -584,8 +571,6 @@ local function CreateWindow()
         window.Grids[name] = grid
     end
 
-    window.Progress = Widgets.Text(window, "GameFontNormalSmall")
-    window.Progress:SetPoint("TOPRIGHT", inset, "BOTTOMRIGHT", -4, -4)
     window.CustomLink = Widgets.Button(window, L.PICKER_MANAGE_CUSTOM, function()
         window:Hide()
         ns.Options:Open("custom")
@@ -626,7 +611,6 @@ local function CreateWindow()
         if not r then return end
         for _, cell in ipairs(allCells) do cell.Selected:SetVertexColor(r, g, b) end
     end)
-    GameIcons:OnIndexProgress(OnIndexProgress)
     ns.RegisterEvent("PLAYER_REGEN_DISABLED", function() window:EnableKeyboard(false) end)
     ns.RegisterEvent("PLAYER_REGEN_ENABLED", function()
         if window:IsShown() then window:EnableKeyboard(true) end

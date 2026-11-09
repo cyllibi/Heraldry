@@ -1,29 +1,45 @@
 #!/usr/bin/env python3
-"""Build Heraldry's table of readable names for the built-in game icons.
+"""Build Heraldry's table of names for the built-in game icons.
 
 On WoW Forever the macro icon functions return file IDs only, so most game icons have no
-name in game. This tool reads the community-maintained listfile (wowdev/wow-listfile, the
-verified release with capitals, cached in tools\\.cache\\listfile), keeps the files under
-Interface\\Icons, turns each file name into a short label, and writes Heraldry\\IconNames.lua:
+name in game. This tool writes Heraldry\\IconNames.lua from two sources:
 
-    INV_Misc_Gem_Ruby_01  ->  "gem ruby"       (shown as "Gem ruby")
-    Spell_Fire_Fireball02 ->  "fire fireball"
+  * File labels, from the community-maintained listfile (wowdev/wow-listfile, the verified
+    release with capitals): every file under Interface\\Icons, its name turned into words.
 
-Labels drop the type prefixes (INV, Spell, Ability, ...), version numbers and variant
-letters, so they read as words and search well. In game, spell names still win where a
-spell uses the icon; these labels name everything else.
+        INV_Misc_Gem_Ruby_01  ->  "gem ruby"       (shown as "Gem ruby")
+        Spell_Fire_Fireball02 ->  "fire fireball"
 
-The table is one string of "<id delta> <label>" lines (about 820 KB). The add-on parses it
-into a table (about 4 MB) only when a game icon's name is shown (the picker, the options,
-the import preview, /heraldry check), never for nameplates, and drops the table again
-when the picker or an options page closes, or right after the check.
+    Labels drop the type prefixes (INV, Spell, Ability, ...), version numbers and variant
+    letters, so they read as words and search well.
 
-  py tools\\iconnames.py                   build (downloads the listfile if it isn't cached)
-  py tools\\iconnames.py --refresh         download the latest listfile first, then build
+  * Player abilities, from WoW Forever's own spell tables as exported by wago.tools
+    (product "wowf"; Forever is vanilla classes and talents plus Season of Discovery runes,
+    not retail): every spell a player can have (class, rune and pet abilities, talents,
+    racials, rogue poisons), listed under its icon as spell IDs. Every ability that shares
+    an icon is kept (up to MAX_SPELLS_PER_ICON), so Evocation's icon is also found as
+    Booming Voice. Ranks collapse to the first rank. NPC spells, mounts, companion pets and
+    the rune-engraving helper spells are left out. The add-on asks the game for each
+    spell's name, so names are in the client's language and match Forever exactly. The
+    first ability is the icon's display name; icons no player ability uses show their
+    file label.
+
+Both sources are cached in tools\\.cache (listfile\\ and wago\\, with the build number
+in wago\\build.txt), and the build is recorded in the generated file.
+
+The table is one string of "<id delta> <label>[|<spell ID>|<spell ID>...]" lines (about
+825 KB). The add-on parses it (about 20 ms and 4.2 MB under Lua 5.1) only when a game
+icon's name is shown or searched (the picker, the options, the import preview,
+/heraldry check), never for nameplates, and drops it again when the picker or an options
+page closes, or right after the check.
+
+  py tools\\iconnames.py                   build (downloads what isn't cached)
+  py tools\\iconnames.py --refresh         download the latest listfile and spell tables, then build
   py tools\\iconnames.py --check           verify Heraldry\\IconNames.lua is well formed
 """
 
 import argparse
+import csv
 import os
 import re
 import sys
@@ -38,6 +54,18 @@ CACHE = os.path.join(emote2lib.CACHE_DIR, "listfile", "verified-listfile-withcap
 LISTFILE_URL = "https://github.com/wowdev/wow-listfile/releases/latest/download/verified-listfile-withcapitals.csv"
 ICON_PATH = re.compile(r"^(\d+);interface/icons/([^/;]+)\.blp\s*$", re.IGNORECASE)
 
+TABLE_CACHE = os.path.join(emote2lib.CACHE_DIR, "wago")
+PRODUCT = "wowf"  # WoW Forever on wago.tools; retail ("wow") has different classes and spells
+TABLE_URL = "https://wago.tools/db2/{table}/csv?branch=" + PRODUCT
+BUILDS_URL = "https://wago.tools/api/builds"
+TABLES = ("SpellName", "SpellMisc", "SkillLine", "SkillLineAbility", "Talent")
+TALENT_RANKS = 9                # Talent.SpellRank_0 .. SpellRank_8
+SKILL_CATEGORY_CLASS = "7"      # class trees, rune abilities, pets; also Mounts, Companions, Engraving (dropped)
+SKILL_CATEGORY_SECONDARY = "9"  # racials and poisons (kept); cooking, riding, first aid, ... (dropped)
+SKILL_LINES_DROPPED = {"Mounts", "Companions", "Engraving"}
+RANK_BASELINE, RANK_TALENT = 0, 1  # which abilities name an icon first
+MAX_SPELLS_PER_ICON = 8
+
 # Words that say what kind of file an icon is rather than what it shows.
 DROP = {
     "inv", "ivn", "misc", "ability", "spell", "icon", "icons", "item", "ui", "achievement", "achievment",
@@ -46,14 +74,18 @@ DROP = {
 KEEP_OF = ("hoof", "roof", "proof", "woof")  # words that really end in "of"
 MAX_LABEL = 60
 MIN_LISTFILE = 1_000_000      # bytes: anything smaller is an error page, not the listfile
-MAX_LISTFILE = 1_000_000_000
+MIN_TABLE = 1_000             # likewise for a spell table
+MAX_DOWNLOAD = 1_000_000_000
 WORD = re.compile(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+")
+DEVELOPER_NAME = re.compile(r"\bDNT\b|\(OLD\)|^zz|\[PH\]|UNUSED|->", re.IGNORECASE)
 
 HEADER = """--[[ IconNames.lua -- generated by tools\\iconnames.py; don't edit by hand.
-  Readable labels for the built-in game icons, made from their file names in the
-  community listfile (github.com/wowdev/wow-listfile). Each line is "<delta> <label>":
-  the file ID is the previous line's ID plus the delta. GameIcons.lua parses it when a
-  game icon's name is shown. The file names are Blizzard's; this file is not
+  Names for the built-in game icons: labels made from their file names in the community
+  listfile (github.com/wowdev/wow-listfile), and the spell IDs of the player abilities
+  that use each icon (WoW Forever build {build}'s spell tables, via wago.tools). Each line
+  is "<delta> <label>[|<spell ID>|<spell ID>...]": the file ID is the previous line's ID
+  plus the delta. GameIcons.lua parses it when a game icon's name is shown or searched and
+  asks the game for the spells' names. The file names are Blizzard's; this file is not
   covered by Heraldry's MIT license. ]]
 
 local _, ns = ...
@@ -99,48 +131,154 @@ def read_listfile(path):
     return names
 
 
-def render(names):
+def read_table(folder, table):
+    try:
+        with open(os.path.join(folder, table + ".csv"), encoding="utf-8", newline="") as handle:
+            return list(csv.DictReader(handle))
+    except KeyError as error:
+        raise emote2lib.ToolError(f"{table}.csv lacks the column {error}; the table layout changed")
+
+
+def number(value):
+    return int(value) if value not in (None, "") else 0
+
+
+def usable_name(name):
+    """Spell names that can go into the data string and read as an ability."""
+    return bool(name) and not any(c in name for c in "|]\n") and not DEVELOPER_NAME.search(name)
+
+
+def player_spells(folder):
+    """{icon file ID: [spell ID, ...]} for every ability a player can have on Forever.
+
+    Sources, best first: class, rune and pet skill lines, racials and poisons (baseline
+    abilities), then talents. Within a source, lower spell IDs (older, more familiar
+    abilities) come first, so Purge names its icon ahead of Evocation and Booming Voice.
+    Ranks of one ability share its name and icon and collapse to the first."""
+    names = {number(r["ID"]): r["Name_lang"].strip() for r in read_table(folder, "SpellName")}
+    icons = {}
+    for row in read_table(folder, "SpellMisc"):
+        spell, icon = number(row["SpellID"]), number(row["SpellIconFileDataID"])
+        if icon and (spell not in icons or number(row["DifficultyID"]) == 0):
+            icons[spell] = icon
+
+    skill_lines = {number(r["ID"]): r for r in read_table(folder, "SkillLine")}
+    baseline_lines = {line for line, r in skill_lines.items()
+                      if (r["CategoryID"] == SKILL_CATEGORY_CLASS and r["DisplayName_lang"] not in SKILL_LINES_DROPPED)
+                      or (r["CategoryID"] == SKILL_CATEGORY_SECONDARY
+                          and ("Racial" in r["DisplayName_lang"] or r["DisplayName_lang"] == "Poisons"))}
+
+    rank = {}  # spell -> best (lowest) source rank
+
+    def add(spell, source_rank):
+        if spell in names and spell in icons:
+            rank[spell] = min(rank.get(spell, source_rank), source_rank)
+
+    for row in read_table(folder, "SkillLineAbility"):
+        if number(row["SkillLine"]) in baseline_lines:
+            add(number(row["Spell"]), RANK_BASELINE)
+    for row in read_table(folder, "Talent"):
+        for index in range(TALENT_RANKS):
+            add(number(row.get(f"SpellRank_{index}")), RANK_TALENT)
+
+    by_icon, seen = {}, set()
+    for spell in sorted(rank, key=lambda s: (rank[s], s)):
+        name, icon = names[spell], icons[spell]
+        if not usable_name(name) or (icon, name) in seen:
+            continue
+        seen.add((icon, name))
+        found = by_icon.setdefault(icon, [])
+        if len(found) < MAX_SPELLS_PER_ICON:
+            found.append(spell)
+    if not by_icon:
+        raise emote2lib.ToolError(f"no player spells found in {folder}")
+    return by_icon
+
+
+def render(labels, spells=None, build="unknown"):
+    """labels: {file ID: label}; spells: {file ID: [spell IDs]}; build: the game build the spells come from."""
+    spells = spells or {}
     lines, previous = [], 0
-    for file_id in sorted(names):
-        lines.append(f"{file_id - previous} {names[file_id]}")
+    for file_id in sorted(set(labels) | set(spells)):
+        line = f"{file_id - previous} {labels.get(file_id, '')}"
+        if spells.get(file_id):
+            line += "|" + "|".join(str(spell) for spell in spells[file_id])
+        lines.append(line)
         previous = file_id
     body = "\n".join(lines)
     if "]" in body:
         raise emote2lib.ToolError("a label contains ']', which would end the Lua string")
-    return f"{HEADER}[[\n{body}\n]]\n"
+    if not re.fullmatch(r"[\w.]+", build):
+        raise emote2lib.ToolError(f"unexpected build number {build!r}")
+    return f"{HEADER.format(build=build)}[[\n{body}\n]]\n"
 
 
 def parse(text):
-    """{file ID: label} from IconNames.lua's text, the same way the add-on reads it."""
-    if not text.startswith(HEADER + "[[\n") or not text.endswith("\n]]\n"):
+    """({file ID: label}, {file ID: [spell IDs]}, build) from IconNames.lua's text, as the add-on reads it."""
+    build = re.search(r"WoW Forever build ([\w.]+)'s", text)
+    header = HEADER.format(build=build.group(1)) if build else None
+    if not header or not text.startswith(header + "[[\n") or not text.endswith("\n]]\n"):
         raise emote2lib.ToolError("IconNames.lua doesn't have the expected header and string")
-    names, file_id = {}, 0
-    for number, line in enumerate(text[len(HEADER) + 3:-4].split("\n"), 1):
-        match = re.fullmatch(r"(\d+) ([^\n]+)", line)
-        if not match or int(match.group(1)) <= 0:
-            raise emote2lib.ToolError(f"IconNames.lua line {number} of the data is malformed: {line!r}")
+    labels, spells, file_id = {}, {}, 0
+    for line_number, line in enumerate(text[len(header) + 3:-4].split("\n"), 1):
+        match = re.fullmatch(r"(\d+) ([^|\n]*)((?:\|\d+)*)", line)
+        if not match or int(match.group(1)) <= 0 or not (match.group(2) or match.group(3)):
+            raise emote2lib.ToolError(f"IconNames.lua line {line_number} of the data is malformed: {line!r}")
         file_id += int(match.group(1))
-        names[file_id] = match.group(2)
-    return names
+        if match.group(2):
+            labels[file_id] = match.group(2)
+        if match.group(3):
+            spells[file_id] = [int(spell) for spell in match.group(3)[1:].split("|")]
+    return labels, spells, build.group(1)
+
+
+def fetch(url, minimum, looks_right):
+    request = urllib.request.Request(url, headers={"User-Agent": "Heraldry-tools"})
+    with urllib.request.urlopen(request, timeout=300) as response:
+        data = response.read(MAX_DOWNLOAD + 1)
+    if not minimum <= len(data) <= MAX_DOWNLOAD or not looks_right(data):
+        raise emote2lib.ToolError(f"the download from {url} doesn't look right")
+    return data
 
 
 def download(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    request = urllib.request.Request(LISTFILE_URL, headers={"User-Agent": "Heraldry-tools"})
-    with urllib.request.urlopen(request, timeout=300) as response:
-        data = response.read(MAX_LISTFILE + 1)
-    if not MIN_LISTFILE <= len(data) <= MAX_LISTFILE or not re.match(rb"\d+;", data):
-        raise emote2lib.ToolError(f"the download from {LISTFILE_URL} doesn't look like the listfile")
-    emote2lib.write_file(path, data)
+    emote2lib.write_file(path, fetch(LISTFILE_URL, MIN_LISTFILE, lambda data: re.match(rb"\d+;", data)))
+
+
+def download_tables(folder, refresh):
+    """Fetches the spell tables if missing (or always, with refresh); returns the build they come from."""
+    os.makedirs(folder, exist_ok=True)
+    build_file = os.path.join(folder, "build.txt")
+    if refresh or not os.path.exists(build_file):
+        import json
+        builds = json.loads(fetch(BUILDS_URL, 2, lambda data: data[:1] == b"{"))
+        try:
+            build = builds[PRODUCT][0]["version"]
+        except (KeyError, IndexError, TypeError):
+            raise emote2lib.ToolError(f"wago.tools lists no {PRODUCT} build")
+        emote2lib.write_file(build_file, build.encode("ascii"))
+        refresh = True  # tables must match the recorded build
+    for table in TABLES:
+        path = os.path.join(folder, table + ".csv")
+        if refresh or not os.path.exists(path):
+            print(f"downloading {table}...", file=sys.stderr)
+            data = fetch(TABLE_URL.format(table=table), MIN_TABLE, lambda data: re.match(rb"[A-Za-z_]+,", data))
+            emote2lib.write_file(path, data)
+    with open(build_file, encoding="ascii") as handle:
+        return handle.read().strip()
 
 
 def build(refresh):
     if refresh or not os.path.exists(CACHE):
         print("downloading the listfile...", file=sys.stderr)
         download(CACHE)
-    names = read_listfile(CACHE)
-    emote2lib.write_file(OUTPUT, render(names).encode("utf-8"))
-    print(f"{len(names)} icon names", file=sys.stderr)
+    game_build = download_tables(TABLE_CACHE, refresh)
+    labels = read_listfile(CACHE)
+    spells = player_spells(TABLE_CACHE)
+    emote2lib.write_file(OUTPUT, render(labels, spells, game_build).encode("utf-8"))
+    print(f"{len(labels)} icon labels, {len(spells)} icons with player abilities (Forever {game_build})",
+          file=sys.stderr)
 
 
 def check():
@@ -149,15 +287,15 @@ def check():
             text = handle.read()
     except OSError:
         raise emote2lib.ToolError("Heraldry\\IconNames.lua is missing; run tools\\iconnames.py")
-    names = parse(text)
-    if render(names) != text:
+    if render(*parse(text)) != text:
         raise emote2lib.ToolError("Heraldry\\IconNames.lua isn't in the generated form; run tools\\iconnames.py")
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="verify IconNames.lua is well formed")
-    parser.add_argument("--refresh", action="store_true", help="download the latest listfile before building")
+    parser.add_argument("--refresh", action="store_true",
+                        help="download the latest listfile and spell tables before building")
     args = parser.parse_args(argv)
     try:
         check() if args.check else build(args.refresh)

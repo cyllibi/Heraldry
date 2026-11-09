@@ -23,9 +23,10 @@ ADDON_ICON = ("`media/heraldry.tga` (the add-on list, minimap button and add-on 
               "CC-BY-3.0. Changes: tinted gold, black fill and outline added, resized.")
 
 # Heraldry/IconNames.lua, made by tools/iconnames.py; data, not art, but credited all the same.
-ICON_NAMES = ("`IconNames.lua` (names for the built-in game icons): labels made from World of Warcraft's icon "
-              "file names, as collected by the community listfile, <https://github.com/wowdev/wow-listfile>. "
-              "The file names are Blizzard Entertainment's; this file is not covered by Heraldry's MIT license.")
+ICON_NAMES = ("`IconNames.lua` (names for the built-in game icons): player ability spell IDs from WoW "
+              "Forever's spell tables, as exported by <https://wago.tools>, and labels made from the icons' file "
+              "names, as collected by the community listfile, <https://github.com/wowdev/wow-listfile>. The names "
+              "are Blizzard Entertainment's; this file is not covered by Heraldry's MIT license.")
 
 # Licenses that let the credit link to the license instead of shipping its text.
 LICENSE_LINKS = {

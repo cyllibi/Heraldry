@@ -824,22 +824,50 @@ end)
 --------------------------------------------------------------------------------
 -- Game icons
 --------------------------------------------------------------------------------
-test("game icons: names from the listfile, word-start search and real file IDs only", function()
+test("game icons: ability and file names, word-start search and real file IDs only", function()
     -- The macro list as the client gives it: one loose file name and two file IDs.
     local saved = { GetLooseMacroIcons, GetLooseMacroItemIcons, GetMacroIcons, GetMacroItemIcons,
-        GetFileIDFromPath, C_Spell, C_Item }
+        GetFileIDFromPath, C_Spell, C_Item, ns.IconNamesData }
     GetLooseMacroIcons = function(raw) raw[#raw + 1] = "INV_Misc_QuestionMark" end
     GetLooseMacroItemIcons, GetMacroItemIcons = function() end, function() end
     GetMacroIcons = function(raw) raw[#raw + 1] = 132089; raw[#raw + 1] = 9999999 end
     GetFileIDFromPath = function(path) return path:lower():find("questionmark") and 134400 or nil end
-    C_Spell = { GetSpellTexture = function() return nil end }
+    -- The game's spell names (Forever's IDs; 12052 is a second spell named Evocation).
+    local spellNames = {
+        [370] = "Purge", [12051] = "Evocation", [12052] = "Evocation", [12321] = "Booming Voice",
+        [11426] = "Ice Barrier", [14177] = "Cold Blood", [5] = "Anti-Magic Shell",
+        [78] = "Heroic Strike", [8676] = "Ambush",
+    }
+    C_Spell = {
+        GetSpellTexture = function() return nil end,
+        GetSpellName = function(spellID) return spellNames[spellID] end,
+    }
     C_Item = { GetItemInfoInstant = function() return nil end }
     local GameIcons = ns.GameIcons
 
-    eq(GameIcons:GetIconName(132089), "Ambush", "a label made from Ability_Ambush")
-    eq(GameIcons:GetIconName(134400), "Question mark", "the listfile label beats the loose raw name")
+    -- A small IconNames.lua: a file label alone, labels with abilities, abilities alone,
+    -- and a spell the client doesn't know (999).
+    ns.IconNamesData = table.concat({
+        "132089 ambush",                              -- 132089
+        "2311 question mark",                         -- 134400
+        "1588 ice lament|11426|14177",                -- 135988
+        "64012 |5",                                   -- 200000
+        "1 |999",                                     -- 200001: nobody's name left
+        "1 nature purge|370|12051|12052|12321",       -- 200002
+    }, "\n")
+    GameIcons:ReleaseNames()
+
+    eq(GameIcons:GetIconName(132089), "Ambush", "a file label, capitalized")
+    eq(GameIcons:GetIconName(134400), "Question mark", "the file label beats the loose raw name")
+    eq(GameIcons:GetIconName(135988), "Ice Barrier", "the first ability names the icon")
+    eq(GameIcons:GetOtherNames(135988), "Cold Blood", "the other")
+    eq(GameIcons:GetIconName(200002), "Purge", "the game's name for the first spell")
+    eq(GameIcons:GetOtherNames(200002), "Evocation, Booming Voice", "a repeated name shows once")
+    eq(GameIcons:GetOtherNames(200000), nil, "one ability, no others")
+    eq(GameIcons:GetIconName(200000), "Anti-Magic Shell", "an ability icon without a file label")
+    eq(GameIcons:GetIconName(200001), nil, "a spell the client doesn't know names nothing")
     eq(GameIcons:GetIconName(9999999), nil, "an icon nobody names")
-    truthy(GameIcons:HasNames(), "naming an icon parses the table")
+    truthy(GameIcons:HasNames(), "naming an icon parses the data")
     GameIcons:ReleaseNames()
     eq(GameIcons:HasNames(), false, "released when the picker closes")
 
@@ -851,25 +879,41 @@ test("game icons: names from the listfile, word-start search and real file IDs o
     eq(ids("ambu"), "132089", "a word start")
     eq(ids("mbush"), "", "not the middle of a word")
     eq(ids("question"), "134400", "a loose icon")
+    eq(ids("ice barrier"), "135988", "an ability icon the macro list lacks")
+    eq(ids("cold blood"), "135988", "found by every ability that uses it")
+    eq(ids("booming"), "200002", "Evocation's icon by Booming Voice")
+    eq(ids("evocation"), "200002", "and by Evocation")
+    eq(ids("ice lament"), "135988", "and by its file label")
+    eq(ids("ice"), "135988", "\"ice\" is a word start; nothing else starts a word with it")
+    eq(ids("anti-magic"), "200000", "a hyphenated ability as typed")
+    eq(ids("magic shell"), "200000", "and by later words")
     eq(ids("1266"), "", "a number that isn't a known icon finds nothing")
     eq(ids("1"), "", "nor does the first digit typed")
     eq(ids("132089"), "132089", "a known file ID")
     eq(ids("9999999"), "9999999", "an unnamed icon from the macro list")
-    eq(ids("135817"), "135817", "an icon the listfile names but the macro list lacks")
+    eq(ids("135988"), "135988", "an icon the data names but the macro list lacks")
     truthy(#GameIcons:Search("") == 3, "an empty query lists the macro icons")
 
-    -- Nameplates resolve icons but never read labels, so they never parse the table.
+    -- Nameplates resolve icons but never read labels, so they never parse the data.
     GameIcons:ReleaseNames()
     Icons:ForgetGameSpecs()
-    local spec = Icons:Resolve("game:132089")
-    eq(spec.texture, 132089, "a game spec resolves")
+    local spec = Icons:Resolve("game:135988")
+    eq(spec.texture, 135988, "a game spec resolves")
     eq(GameIcons:HasNames(), false, "resolving a game icon doesn't parse names")
     local missing = Icons:Resolve("lib:no_such_icon")
     truthy(missing.missing, "a missing library icon")
     eq(GameIcons:HasNames(), false, "nor does a missing icon")
-    eq(spec.label, "Ambush", "the label is looked up when read")
+    eq(spec.label, "Ice Barrier", "the label is looked up when read")
     eq(Icons:Describe("game:9999999"), L.ICON_DESCRIPTION:format(L.GAME_ICON_ID:format(9999999), L.SOURCE_GAME),
         "an unnamed icon describes itself by number")
+
+    -- The shipped data (Forever's spells): Evocation's icon is also Booming Voice's, and
+    -- Heroic Strike names an icon.
+    ns.IconNamesData = saved[8]
+    GameIcons:ReleaseNames()
+    truthy((" " .. ids("booming voice") .. ","):find("136075,", 1, true), "shipped: Booming Voice's icon")
+    truthy((" " .. ids("evocation") .. ","):find("136075,", 1, true), "shipped: is Evocation's icon")
+    truthy((" " .. ids("heroic strike") .. ","):find("132282,", 1, true), "shipped: Heroic Strike")
     GameIcons:ReleaseNames()
     Icons:ForgetGameSpecs()
 

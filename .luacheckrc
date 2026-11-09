@@ -61,6 +61,7 @@ read_globals = {
 
 -- Strings read better unwrapped; the locale file is data, not code.
 files["Heraldry/Locales/"] = { max_line_length = false }
+files["Heraldry/IconNames.lua"] = { max_line_length = false } -- generated data
 
 -- Headless tests run under plain Lua 5.1; tests/wowstub.lua defines the WoW API the
 -- add-on reads (read-only above), so writing those globals is the stub's whole job.

@@ -25,5 +25,6 @@ covered by this license: they come from game-icons.net under CC BY 3.0, with
 their authors and changes listed in Heraldry/CREDITS.md.
 
 Heraldry/IconNames.lua is not covered by this license either: it holds labels made
-from World of Warcraft's icon file names (Blizzard Entertainment's), as collected by
-the community listfile at https://github.com/wowdev/wow-listfile.
+from World of Warcraft's icon file names, as collected by the community listfile at
+https://github.com/wowdev/wow-listfile, and player ability spell IDs from WoW Forever's
+spell tables, as exported by https://wago.tools. Both are Blizzard Entertainment's.

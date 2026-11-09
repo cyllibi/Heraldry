@@ -44,7 +44,8 @@ sheets are named `name_anim<columns>x<rows>_<frames>_<fps>` with 64x64 frames (1
 - Library icons and Heraldry's own icon: from [game-icons.net](https://game-icons.net) (CC BY 3.0), filled and
   outlined; each icon's author is listed in [`Heraldry/CREDITS.md`](Heraldry/CREDITS.md), generated from the
   manifest.
-- Game icon names: made from the icons' file names in the community
+- Game icon names: player abilities from WoW Forever's spell tables via [wago.tools](https://wago.tools),
+  and labels made from the icons' file names in the community
   [wow-listfile](https://github.com/wowdev/wow-listfile); the names themselves are Blizzard's.
 - Twitch Emotes: shown from your own installed TwitchEmotes add-on and any emote pack that registers into it
   (TwitchEmotes_Giga, ...). Heraldry ships none of that art; credit belongs to those add-ons and the emotes'

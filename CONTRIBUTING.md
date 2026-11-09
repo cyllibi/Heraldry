@@ -48,15 +48,18 @@ writes `Heraldry/media/library/game-icons/<key>.blp` (128 px DXT5 with mipmaps, 
 (and the add-on's own icon, `Heraldry/media/heraldry.tga`). `--check` verifies the block and textures match
 the list. Never remove a shipped line: its key is in players' rules.
 
-**Game icon names** (`Heraldry/IconNames.lua`) come from the community listfile. To pick up icons from a
-newer game patch:
+**Game icon names** (`Heraldry/IconNames.lua`) come from the community listfile (file labels) and WoW
+Forever's own spell tables as exported by wago.tools (product `wowf`; player abilities as spell IDs). To pick
+up icons and abilities from a newer Forever build:
 
 ```
 py -3 tools\iconnames.py --refresh
 ```
 
-It downloads the verified listfile into `tools/.cache/listfile/` and regenerates the table; `--check` verifies
-the file is in generated form. Without `--refresh` it reuses the cached download.
+It downloads the verified listfile into `tools/.cache/listfile/` and the spell tables into `tools/.cache/wago/`,
+records the Forever build in `build.txt` and the generated file, then regenerates the data; `--check` verifies
+the file is in generated form. Without `--refresh` it reuses the
+cached downloads. If wago.tools renames a column, the tool stops and names it.
 
 **Anything else**, one image or 7TV emote at a time:
 

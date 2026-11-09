@@ -355,18 +355,62 @@ class IconNames(unittest.TestCase):
                              {132089: "ambush", 5149947: "worldevent special murlocfigure"})
 
     def test_render_and_parse_round_trip(self):
-        names = {132089: "ambush", 132090: "back stab", 134400: "question mark"}
-        text = iconnames.render(names)
-        self.assertIn("\n132089 ambush\n1 back stab\n2310 question mark\n", text)
-        self.assertEqual(iconnames.parse(text), names)
+        labels = {132089: "ambush", 132090: "back stab", 134400: "question mark"}
+        spells = {132089: [20580, 5215], 200000: [48707]}
+        text = iconnames.render(labels, spells, "1.60.1.70862")
+        self.assertIn("build 1.60.1.70862's", text)
+        self.assertIn("\n132089 ambush|20580|5215\n1 back stab\n2310 question mark\n65600 |48707\n", text)
+        self.assertEqual(iconnames.parse(text), (labels, spells, "1.60.1.70862"))
 
     def test_damaged_data_is_refused(self):
-        text = iconnames.render({132089: "ambush"}).replace("132089 ambush", "x ambush")
-        with self.assertRaises(emote2lib.ToolError):
-            iconnames.parse(text)
+        good = iconnames.render({132089: "ambush"}, {}, "1.60.1")
+        for damaged in (good.replace("132089 ambush", "x ambush"), good.replace("132089 ambush", "132089 "),
+                        good.replace("132089 ambush", "132089 ambush|Shadowmeld"), good.replace("1.60.1", "?")):
+            with self.assertRaises(emote2lib.ToolError):
+                iconnames.parse(damaged)
         with self.assertRaises(emote2lib.ToolError):
             iconnames.render({1: "bad ]] label"})
 
+    def test_player_spells_keep_every_ability_and_drop_the_rest(self):
+        tables = {
+            "SpellName": ("ID,Name_lang", [
+                "370,Purge", "12051,Evocation", "12321,Booming Voice", "78,Heroic Strike", "284,Heroic Strike",
+                "20580,Shadowmeld", "17253,Bite", "9999,Fireball", "177242,Barnaby", "5,Frost Nova (OLD)",
+                "400,Engrave Gloves - Mutilate", "401,Instant Poison"]),
+            "SpellMisc": ("SpellID,SpellIconFileDataID,DifficultyID", [
+                "12051,1,2", "12051,136075,0", "370,136075,0", "12321,136075,0", "78,132282,0", "284,132282,0",
+                "20580,132089,0", "17253,132278,0", "9999,136075,0", "177242,652131,0", "5,777,0",
+                "400,133816,0", "401,132273,0"]),
+            "SkillLine": ("ID,CategoryID,DisplayName_lang", [
+                "8,7,Fire", "26,7,Arms", "375,7,Shamanism", "777,7,Companions", "778,7,Engraving",
+                "270,7,Pet - Bat", "126,9,Night Elf Racial", "40,9,Poisons", "185,9,Cooking"]),
+            "SkillLineAbility": ("SkillLine,Spell", [
+                "8,5", "26,78", "26,284", "375,370", "777,177242", "778,400", "126,20580", "270,17253",
+                "40,401", "185,9999"]),
+            "Talent": ("ID,SpellRank_0,SpellRank_1", ["1,12051,", "2,12321,0"]),
+        }
+        self.assertEqual(set(tables), set(iconnames.TABLES))
+        with tempfile.TemporaryDirectory() as folder:
+            for table, (header, rows) in tables.items():
+                with open(os.path.join(folder, table + ".csv"), "w", encoding="utf-8", newline="") as handle:
+                    handle.write("\n".join([header] + rows) + "\n")
+            spells = iconnames.player_spells(folder)
+        self.assertEqual(spells, {
+            136075: [370, 12051, 12321],  # Purge (baseline) before the talents; not the NPC Fireball
+            132282: [78],                 # Heroic Strike's ranks collapse to the first
+            132089: [20580],              # racial
+            132278: [17253],              # pet ability
+            132273: [401],                # poison
+        })                                # no companion, engraving helper, cooking or (OLD) spell
+
+    def test_shipped_names_are_forevers(self):
+        with open(iconnames.OUTPUT, encoding="utf-8", newline="") as handle:
+            _, spells, build = iconnames.parse(handle.read())
+        self.assertTrue(build.startswith("1."), "built from WoW Forever (wowf), not retail")
+        shipped = {spell for ids in spells.values() for spell in ids}
+        self.assertIn(78, spells.get(132282, []), "Heroic Strike (rank 1) names its icon")
+        self.assertTrue({12051, 12321} <= set(spells.get(136075, [])), "Evocation and Booming Voice share an icon")
+        self.assertFalse({1219093, 49576} & shipped, "no Death Grip: Forever has no death knights")
 
 if __name__ == "__main__":
     unittest.main()

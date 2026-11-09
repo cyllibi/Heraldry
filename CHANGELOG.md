@@ -9,8 +9,8 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
   "no icon"), guild rules per ruleset, and a "my guild" rule that follows your character's guild.
 - EllesmereUI Nameplates support (full plates, name-only and enemy plates) and Blizzard nameplates.
 - Icon sources: the Heraldry library (static and animated), built-in game icons
-  named and searchable by spell name and file name, emotes from the TwitchEmotes add-on, and custom image
-  files.
+  named and searchable at once by every Forever player ability that uses them (in the client's language) and
+  by file name, emotes from the TwitchEmotes add-on, and custom image files.
 - Options under AddOns: Guilds, Players, Display (with a live preview), Sharing and Custom icons.
 - Account-wide settings with an optional per-character copy.
 - Export and import of rules as text, with a preview before applying.
