@@ -1,0 +1,53 @@
+## Interface: 16001
+## Title: Heraldry
+## Notes: Shows an icon next to the names of chosen guilds and players on nameplates.
+## Author: Kachow
+## Version: @project-version@
+## Category: Nameplates
+## IconTexture: Interface\AddOns\Heraldry\media\heraldry
+## SavedVariables: HeraldryDB
+## SavedVariablesPerCharacter: HeraldryCharDB
+## OptionalDeps: EllesmereUI, EllesmereUINameplates, Plater, ElvUI, TidyPlates_ThreatPlates, TwitchEmotes, TwitchEmotes_Giga
+## AddonCompartmentFunc: Heraldry_OnAddonCompartmentClick
+
+# Libraries for the minimap button (fetched by the packager; see .pkgmeta)
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+Libs\LibDBIcon-1.0\lib.xml
+
+# Strings
+Locales\enUS.lua
+
+# Core
+Core.lua
+Identity.lua
+Library.lua
+Icons.lua
+GameIcons.lua
+Database.lua
+Matching.lua
+Share.lua
+MinimapButton.lua
+
+# Nameplates: the core, one adapter per nameplate add-on, then Blizzard, then the fallback
+Plates\Plates.lua
+Plates\EllesmereUI.lua
+Plates\Plater.lua
+Plates\ElvUI.lua
+Plates\ThreatPlates.lua
+Plates\Blizzard.lua
+Plates\Generic.lua
+Diagnostics.lua
+
+# Interface
+UI\Skin.lua
+UI\Widgets.lua
+UI\IconPicker.lua
+UI\Options.lua
+UI\PageGeneral.lua
+UI\PageRules.lua
+UI\PageDisplay.lua
+UI\PageSharing.lua
+UI\PageCustom.lua
+Slash.lua

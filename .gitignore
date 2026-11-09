@@ -1,0 +1,17 @@
+
+# Review rounds from critic agents
+.reviews/
+
+# Local dev tools (luacheck etc.)
+.tools/
+
+# Development-only library add-on (test art that may not ship; never committed or packaged)
+HeraldryDev/
+
+# Third-party libraries: fetched by the packager (.pkgmeta externals)
+Heraldry/Libs/
+
+# Python caches and tool downloads
+__pycache__/
+tools/.cache/
+

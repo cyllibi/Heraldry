@@ -1,0 +1,36 @@
+# Builds and uploads a release when a version tag (v1.2.3) is pushed.
+# Needs the repository secret CF_API_KEY and ## X-Curse-Project-ID in Heraldry.toc.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Lint
+        run: |
+          sudo apt-get install -y luarocks lua5.1
+          sudo luarocks install luacheck
+          luacheck Heraldry tests
+
+      - name: Tests
+        run: |
+          lua5.1 tests/run.lua
+          python3 -m unittest discover -s tests -p "test_*.py"
+          python3 tools/credits.py --check
+
+      - name: Package and upload
+        uses: BigWigsMods/packager@v2

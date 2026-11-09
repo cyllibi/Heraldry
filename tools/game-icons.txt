@@ -1,0 +1,185 @@
+# Heraldry library: icons from game-icons.net, all CC BY 3.0.
+# tools\gameicons2lib.py reads this list, downloads each icon, fills enclosed areas black,
+# adds a black outline and writes the textures and the game-icons block of
+# Heraldry\Library.lua.
+#
+#   [tags]                                search words for the lines that follow
+#   author/name                           an icon: key gi_<name>, display name its title case
+#   author/name = Display name            a display name of its own
+#   author/name | more tags               search words for this icon only
+#   author/name = Display name | more tags
+#
+# Keys are stored in players' rules: once an icon has shipped, don't remove or rename it.
+# Check new icons at 20 px (the nameplate size) before adding them; busy art turns to mush.
+# Browse https://game-icons.net to find more.
+
+[shield heraldry]
+lorc/checked-shield | checkered
+delapouite/griffin-shield | gryphon griffon bird
+delapouite/dragon-shield | dragon
+delapouite/cross-shield | holy paladin crusader
+delapouite/heart-shield | love
+delapouite/templar-shield | holy paladin crusader
+delapouite/viking-shield | round norse warrior
+delapouite/roman-shield | legion
+delapouite/trident-shield | sea
+delapouite/tribal-shield
+lorc/fire-shield | flame
+lorc/lightning-shield | shaman storm
+lorc/eye-shield
+
+[heraldry emblem banner flag]
+delapouite/fleur-de-lys = Fleur-de-lys | lily
+caro-asercion/heraldic-sun | holy
+delapouite/griffin-symbol | gryphon griffon bird
+lorc/eagle-emblem | bird alliance
+lorc/winged-emblem | wings
+lorc/batwing-emblem | bat
+lorc/steelwing-emblem | wings
+delapouite/knight-banner
+delapouite/vertical-banner
+lorc/tattered-banner | horde
+lorc/flying-flag
+delapouite/pirate-flag | jolly roger skull
+delapouite/tower-flag | castle
+
+[crown royal]
+lorc/crown | king
+delapouite/imperial-crown | king
+delapouite/jewel-crown | queen
+lorc/queen-crown
+lorc/laurel-crown | victory
+lorc/sharp-crown | king
+lorc/crowned-heart | love
+lorc/crowned-skull | undead lich king
+
+[weapon sword]
+lorc/crossed-swords | warrior pvp
+lorc/broadsword | warrior
+lorc/rune-sword | death knight
+lorc/shining-sword | paladin holy
+delapouite/two-handed-sword = Two-handed sword | warrior
+lorc/winged-sword
+lorc/plain-dagger | rogue
+lorc/daggers | rogue
+
+[weapon]
+lorc/battle-axe | warrior
+lorc/crossed-axes | warrior horde
+delapouite/war-axe | warrior
+delapouite/warhammer | paladin
+delapouite/thor-hammer | paladin shaman
+lorc/spiked-mace | priest paladin
+delapouite/flail
+lorc/trident | sea
+lorc/spears | hunter
+delapouite/bow-arrow = Bow and arrow | hunter archer ranged
+carl-olsen/crossbow | hunter ranged
+lorc/mailed-fist | monk warrior
+
+[magic]
+lorc/wizard-staff | mage caster
+lorc/crystal-wand | mage priest warlock caster
+delapouite/skull-staff | warlock necromancer undead
+delapouite/spell-book | mage caster tome
+lorc/scroll-unfurled | quest
+delapouite/health-potion | healer
+lorc/standing-potion | alchemy
+lorc/ankh | priest holy
+lorc/pentagram-rose | warlock demon
+lorc/hourglass | time
+lorc/gems | jewel crafting
+delapouite/totem | shaman tribal
+
+[armor helmet knight]
+delapouite/black-knight-helm | warrior paladin
+delapouite/viking-helmet | norse dwarf
+delapouite/spartan-helmet | warrior
+lorc/horned-helm | warrior orc
+skoll/chess-knight | horse
+
+[castle tower]
+lorc/castle | keep fortress
+lorc/white-tower | keep
+delapouite/watchtower
+
+[skull death undead]
+lorc/skull-crossed-bones | pirate poison
+lorc/horned-skull | demon
+lorc/pirate-skull | pirate
+lorc/daemon-skull | demon warlock
+lorc/dread-skull
+lorc/fanged-skull
+lorc/happy-skull | funny
+lorc/broken-skull
+lorc/ghost | spirit
+delapouite/vampire-dracula = Vampire | blood
+
+[dragon beast]
+lorc/dragon-head | wyrm
+delapouite/spiked-dragon-head | wyrm
+lorc/double-dragon | wyrm
+lorc/sea-dragon | serpent
+lorc/hydra
+delapouite/unicorn | horse
+delapouite/kraken-tentacle | sea octopus
+
+[animal]
+lorc/wolf-head | dog worgen
+lorc/direwolf | dog worgen
+lorc/lion | cat alliance
+delapouite/eagle-head | bird
+lorc/raven | bird crow
+lorc/owl | bird druid
+lorc/feather | bird
+lorc/snake | serpent
+lorc/stag-head | deer druid
+delapouite/horse-head | mount
+delapouite/bear-head | druid
+caro-asercion/boar | pig
+lorc/fox-head
+delapouite/bat
+lorc/frog
+lorc/paw | druid hunter pet
+lorc/scorpion
+lorc/bee
+lorc/bull | cow tauren
+lorc/cat | druid
+lorc/pig-face | boar
+delapouite/chicken | bird
+lorc/hanging-spider
+
+[element nature]
+lorc/fireball | fire flame mage
+carl-olsen/flame | fire
+lorc/heavy-lightning | storm shaman
+lorc/sun | holy day
+lorc/moon | night druid
+lorc/evil-moon | night
+delapouite/polar-star | star
+lorc/rose | flower love
+lorc/pine-tree | tree forest
+delapouite/oak-leaf | druid tree
+lorc/maple-leaf | tree
+delapouite/shamrock | luck clover
+lorc/mushroom
+
+[object]
+lorc/anchor | sea ship
+lorc/key
+lorc/jeweled-chalice | grail
+delapouite/coins | gold money
+delapouite/gold-mine | money mining
+lorc/anvil | blacksmith crafting
+lorc/trophy | victory
+lorc/medal | award
+lorc/laurels | victory
+lorc/hunting-horn
+lorc/beer-stein | ale drink tavern
+delapouite/beer-horn | ale drink mead
+delapouite/torch | fire light
+lorc/compass | explore
+delapouite/ship-wheel | sea sailor
+delapouite/harp | music bard
+lorc/ninja-mask | rogue
+skoll/hearts | love

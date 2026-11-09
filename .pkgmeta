@@ -1,0 +1,33 @@
+package-as: Heraldry
+
+# The add-on lives in the Heraldry/ subfolder of the repository; ship only that folder.
+move-folders:
+  Heraldry/Heraldry: Heraldry
+
+# Libraries for the minimap button. Not committed: the packager fetches them, and for
+# development copy them into Heraldry/Libs/ (see CONTRIBUTING.md).
+externals:
+  Heraldry/Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
+  Heraldry/Libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+  Heraldry/Libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1
+  Heraldry/Libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
+ignore:
+  - .github
+  - .reviews
+  - .tools
+  - tests
+  - tools
+  - CLAUDE.md
+  - CONTRIBUTING.md
+  - DESIGN.md
+  - TESTING.md
+  - README.md
+  - .luacheckrc
+  - .gitattributes
+  # Development-only library add-on with test art (also gitignored)
+  - HeraldryDev
