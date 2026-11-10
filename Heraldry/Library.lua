@@ -10,7 +10,7 @@
     key        unique id, [a-z0-9_]. Stored in rules and export strings: never change it.
                To rename, add the old key to `aliases` of the new entry.
     name       display name in the picker
-    file       texture path under media\library\, no extension ("kachow", "dev/mcqueen")
+    file       texture path under media\library\, no extension ("game-icons/gi_checked_shield", "dev/dance")
     shape      "square" or "wide"
     width, height        art size in pixels (for animated icons: one frame)
     texWidth, texHeight  texture size in pixels, powers of two, at most 1024

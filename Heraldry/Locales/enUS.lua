@@ -202,7 +202,7 @@ L.IMPORT_ERROR_NOTHING = "This string holds no rules."
 -- Custom page
 L.PAGE_CUSTOM = "Custom icons"
 L.CUSTOM_INTRO = "Use your own images: put them in %s (create the folder), as 32-bit TGA with transparency or BLP. Square icons are 128x128, wide ones 256x128 with _wide at the end of the name. Animated sheets: name_anim<columns>x<rows>_<frames>_<fps>, frames 64x64 (or 128x64 for _wide).\nThe game only sees files that existed when it started: after adding a file, restart the game fully (a /reload is not enough). If a preview stays empty, check the file name. Custom icons only show on your own screen."
-L.CUSTOM_PLACEHOLDER = "File name, e.g. mcqueen_wide"
+L.CUSTOM_PLACEHOLDER = "File name, e.g. guildcrest_wide"
 L.CUSTOM_REGISTER = "Register"
 L.CUSTOM_ALREADY = "That file is already registered."
 L.CUSTOM_ADDED = "Registered %s. It is now in the icon picker's Custom tab."

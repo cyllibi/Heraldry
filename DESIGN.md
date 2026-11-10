@@ -263,7 +263,7 @@ HeraldryDB = {
     myGuild = { enabled = false, icon = nil },
     guilds  = { ["pve/kachow"] = { name = "Kachow", icon = "lib:kachow" } },
     players = { ["somebody stormwind"] = { name = "Somebody Stormwind", icon = "none" } },
-    custom  = { "mcqueen_wide" },
+    custom  = { "guildcrest_wide" },
     display = { enabled = true, friendly = true, enemy = true, position = "LEFT",
                 scale = 1.0, alpha = 1.0, gap = 2, x = 0, y = 0,
                 world = true, dungeon = true, raid = true, pvp = true,
