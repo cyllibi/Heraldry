@@ -644,6 +644,30 @@ test("minimap clicks: target shortcuts, pages without a target, middle-click cle
     ns.Options, IsShiftKeyDown = savedOptions, savedShift
 end)
 
+test("blizzard plates: the name box comes from the plate, then Forever's layout", function()
+    local adapter
+    local fakePlates = { RegisterAdapter = function(_, registered) adapter = registered end }
+    local copy = setmetatable({ Plates = fakePlates }, { __index = ns })
+    assert(loadfile(ADDON .. "/Plates/Blizzard.lua"))(ADDON, copy)
+    local function Frame(width) return { GetWidth = function() return width end } end
+    local saved = { NamePlateConstants, NamePlateSetupOptions, C_CVar }
+
+    NamePlateConstants = { NAME_PLATE_WIDTH = 190, CLASSIC_NAME_PLATE_WIDTH = 152 } -- Forever's
+    NamePlateSetupOptions = { horizontalScale = 1, insetWidth = 12 }
+    eq(adapter.NameBoxWidth({ name = Frame(180), HealthBarsContainer = Frame(200) }), 180, "the name's own width")
+    eq(adapter.NameBoxWidth({ name = Frame(stub.Secret()), HealthBarsContainer = Frame(200) }), 200,
+        "a secret name width falls back to the health bar area")
+    eq(adapter.NameBoxWidth({ name = Frame(stub.Secret()), HealthBarsContainer = Frame(stub.Secret()) }), 166,
+        "then Forever's layout: 190 less 12 a side")
+    NamePlateSetupOptions = { horizontalScale = 1.25, insetWidth = 15, useClassicHealthBar = true }
+    eq(adapter.NameBoxWidth({ name = Frame(0) }), 152 * 1.25 - 30, "the Classic style at a larger size")
+    NamePlateConstants, NamePlateSetupOptions = nil, nil
+    C_CVar = { GetCVar = function() return "1.2" end }
+    near(adapter.NameBoxWidth({}), 110 * 1.2 - 8, "the old layout when Forever's tables are missing")
+
+    NamePlateConstants, NamePlateSetupOptions, C_CVar = saved[1], saved[2], saved[3]
+end)
+
 test("seen lists are capped but the seen mark is not", function()
     local first = Identity:GetRuleset() .. "/seenguild"
     for i = 1, 60 do

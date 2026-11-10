@@ -36,6 +36,7 @@ read_globals = {
     "UnitGUID", "UnitIsInMyGuild", "UnitIsPlayer", "UnitIsUnit", "UnitName",
 
     -- Icons and textures
+    "NamePlateConstants", "NamePlateSetupOptions",
     "GetFileIDFromPath", "GetLooseMacroIcons", "GetLooseMacroItemIcons", "GetMacroIcons", "GetMacroItemIcons",
 
     -- Frames, templates and UI utilities

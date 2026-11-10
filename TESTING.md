@@ -162,8 +162,9 @@ Check icon position against the name, size, and that it moves with the plate.
       a plate before EUI builds it.
 
 ## Nameplates: Blizzard (disable EllesmereUINameplates)
-- [ ] Friendly and enemy Blizzard plates: icon left of the name text, not at the bar's edge. A long name: the
-      icon stays at the bar's edge (`/heraldry check` shows the box width; compare with the bar).
+- [ ] Friendly and enemy Blizzard plates: icon left of the name text, not at the bar's edge. A long name cut
+      with "...": the icon sits clear of the first letter (`/heraldry check` shows the box width; compare
+      with the bar). Repeat with Options > Nameplates size set to Large and to the Classic style.
 - [ ] Forever's level indicator and the icon don't overlap in the default position.
 
 ## Nameplates: other add-ons (one at a time, EllesmereUINameplates disabled)

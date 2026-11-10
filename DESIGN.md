@@ -28,7 +28,7 @@ generic fallback never does, so no icon floats over a hidden plate. The fallback
 | Plater | `nameplate.CurrentUnitNameString` (`unitFrame.unitName` in the bar, or `ActorNameSpecial`, auto-sized) | `Plater.db.profile.plate_config[unitFrame.ActorType].health[1]` / tight |
 | ElvUI | `nameplate.unitFrame.Name` (`.blizzPlate` tells it from Plater) | measured |
 | Threat Plates | `nameplate.TPFrame.visual.NameText` | measured |
-| Blizzard (EUI not loaded, EUI leaves friendly players or follower dungeons/delves to Blizzard) | `nameplate.UnitFrame.name`, only while the UnitFrame is on screen (parent is the nameplate, visible, alpha > 0) | anchored across the health bar: 110 x `nameplateHorizontalScale` - 2 x 4 |
+| Blizzard (EUI not loaded, EUI leaves friendly players or follower dungeons/delves to Blizzard) | `nameplate.UnitFrame.name`, only while the UnitFrame is on screen (parent is the nameplate, visible, alpha > 0) | anchored across the health bar: the name's width or the bar area's when readable, else Forever's layout (190 on Forever, 230 on mainline, 152 for the Classic style, x the nameplate size's scale, less 12 x scale a side; Forever centres names above the bar with the level box outside it) |
 | Generic (Platynator, unknown plate add-ons) | none: Heraldry's own frame over the nameplate | icon centred above the nameplate, lifted 14 px to clear a name drawn above the bar |
 
 Plater, ElvUI and Threat Plates adapters follow their current Forever sources and are not tested in
