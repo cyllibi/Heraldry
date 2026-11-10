@@ -44,6 +44,14 @@ player.
     <td align="center">Status, your target and diagnostics</td>
     <td align="center">Sharing: export and import rules as text</td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/blizzard-tall.jpg" alt="Blizzard nameplates with the tall icon option: icons as tall as the name and health bar, beside the bar"></td>
+    <td width="50%"><img src="docs/images/options-custom.png" alt="The Custom icons page: register your own TGA or BLP images by file name"></td>
+  </tr>
+  <tr>
+    <td align="center">Blizzard nameplates with the tall icon option</td>
+    <td align="center">Custom icons: your own images</td>
+  </tr>
 </table>
 
 ## Use
@@ -58,9 +66,11 @@ player.
   | Shift-click | Show or hide icons | Show or hide icons |
 
   `/heraldry undo` puts back what a middle-click removed. Drag the button to move it. The add-on drawer entry
-  works the same way. Minimap button collectors (EllesmereUI's
-  minimap, MinimapButtonButton) pick it up. `/heraldry minimap` or the checkbox on the options' first page
-  hides it.
+  works the same way. Minimap button collectors (EllesmereUI's minimap, MinimapButtonButton) pick it up.
+  `/heraldry minimap` or the checkbox on the options' first page hides it. Its tooltip says what each click
+  will do right now:
+
+  <img src="docs/images/minimap-tooltip.png" alt="The minimap button's tooltip with a player targeted: click to choose an icon for them, right-click for their guild, middle-click has nothing to remove, shift-click shows or hides icons" width="380">
 - `/heraldry guild` picks an icon for your target's guild; `/heraldry player` for your target;
   `/heraldry try` shows your preview icon on your target for 10 seconds.
 - `/heraldry check` shows what the game tells add-ons about your target, for bug reports; the same report
