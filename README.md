@@ -1,16 +1,20 @@
-# Heraldry
+<h1><img src="docs/images/heraldry.png" alt="" width="44" height="44" align="absmiddle"> Heraldry</h1>
 
 A World of Warcraft **Forever** add-on that shows an icon next to the names of the guilds and players you
 choose, on friendly and enemy nameplates. Mark your own guild, your allies, your rivals, or one particular
 player.
 
-<!-- Screenshots: add before the first release (EllesmereUI plates, Blizzard plates, the options). -->
+<p align="center">
+  <img src="docs/images/nameplates.png" alt="Library icons (a crowned skull, a wolf shield, a howling wolf) beside player names on nameplates" width="49%">
+  <img src="docs/images/nameplates-2.png" alt="Shield icons beside player names on nameplates at night" width="49%">
+</p>
 
 ## Features
 - An icon for any guild, an icon (or no icon) for any player, and a "my guild" icon that follows whichever
   guild your character is in.
-- Icons from Heraldry's own library (static and animated), the game's built-in icons (searchable by spell
-  name), the TwitchEmotes add-on if you have it, or your own image files.
+- Icons from Heraldry's own library (over 400 black-and-white heraldic icons in 14 categories), the game's
+  built-in icons (named and searchable by every class ability, talent and rune that uses them), the
+  TwitchEmotes add-on if you have it, or your own image files.
 - Works with **EllesmereUI Nameplates** (full plates, name-only and enemy plates, skinned to match
   EllesmereUI, with its own section in EUI's options) and with Blizzard's nameplates. Plater, ElvUI and
   Threat Plates have adapters too (untested in game so far). With any other nameplate add-on (Platynator,
@@ -20,6 +24,27 @@ player.
   raids, PvP, combat).
 - Settings shared by all characters, or per character.
 - Share your setup as a text string; others preview it before applying.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/options-display.png" alt="The Display page: position, size, gap, offsets, opacity, where icons show, and a live preview"></td>
+    <td width="50%"><img src="docs/images/options-general.png" alt="The first options page: status, your target, and diagnostics"></td>
+  </tr>
+  <tr>
+    <td align="center">Display: layout, where icons show, live preview</td>
+    <td align="center">Status, your target and diagnostics</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/options-sharing.png" alt="The Sharing page: export your rules as a string, or import and preview one"></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="center">Sharing: export and import rules as text</td>
+    <td></td>
+  </tr>
+</table>
 
 ## Use
 - `/heraldry` opens the options (also under Game Menu > Options > AddOns, and the add-on drawer).
