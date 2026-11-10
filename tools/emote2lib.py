@@ -78,7 +78,7 @@ def tool_path(directory, name):
             return path
     found = shutil.which(name)
     if not found:
-        raise ToolError(f"{name} not found; pass --ffmpeg-dir")
+        raise ToolError(f"{name} not found; put it on PATH, set FFMPEG_DIR or pass --ffmpeg-dir")
     return found
 
 

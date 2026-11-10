@@ -5,7 +5,7 @@ choose, on friendly and enemy nameplates. Mark your own guild, your allies, your
 player.
 
 <p align="center">
-  <img src="docs/images/nameplates.png" alt="Library icons (a crowned skull, a wolf shield, a howling wolf) beside player names on nameplates" width="49%">
+  <img src="docs/images/blizzard-above.jpg" alt="A crowd on Blizzard's own nameplates: guild shields above several players' names" width="49%">
   <img src="docs/images/nameplates-crowd.jpg" alt="A crowded room on EllesmereUI nameplates: guild shields beside several players' names" width="49%">
 </p>
 
@@ -15,9 +15,10 @@ player.
 - Icons from Heraldry's own library (over 400 black-and-white heraldic icons in 14 categories), the game's
   built-in icons (named and searchable by every class ability, talent and rune that uses them), the
   TwitchEmotes add-on if you have it, or your own image files.
-- Works with **EllesmereUI Nameplates** (full plates, name-only and enemy plates, skinned to match
-  EllesmereUI, with its own section in EUI's options) and with Blizzard's nameplates. Plater, ElvUI and
-  Threat Plates have adapters too (untested in game so far). With any other nameplate add-on (Platynator,
+- Works on its own with **Blizzard's nameplates**: no other add-on needed. For a nicer look we recommend
+  **EllesmereUI Nameplates**, which Heraldry fully supports (full plates, name-only and enemy plates, skinned
+  to match EllesmereUI, with its own section in EUI's options). Plater, ElvUI and Threat Plates have
+  adapters too (untested in game so far). With any other nameplate add-on (Platynator,
   small Forever plate add-ons) the icon sits centred above the nameplate; plates a known add-on hides never
   get an icon.
 - Position, size, gap, offsets and opacity, with a live preview; per-context visibility (world, dungeons,
@@ -53,11 +54,11 @@ player.
     <td align="center">Sharing: export and import rules as text</td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/images/blizzard-above.jpg" alt="A crowd on Blizzard nameplates: guild shields above several players' names"></td>
+    <td width="50%"><img src="docs/images/nameplates.png" alt="Library icons (a crowned skull, a wolf shield, a howling wolf) beside player names on EllesmereUI nameplates"></td>
     <td width="50%"><img src="docs/images/blizzard-tall.jpg" alt="Blizzard nameplates with the tall icon option: icons as tall as the name and health bar, beside the bar"></td>
   </tr>
   <tr>
-    <td align="center">Blizzard nameplates: icons above the name</td>
+    <td align="center">EllesmereUI nameplates (recommended), icons left of the name</td>
     <td align="center">Blizzard nameplates with the tall icon option</td>
   </tr>
   <tr>

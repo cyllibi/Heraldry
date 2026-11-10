@@ -2,6 +2,9 @@
 # Review rounds from critic agents
 .reviews/
 
+# The developer's local setup notes (paths, personal add-on list): never committed
+CLAUDE.local.md
+
 # Local dev tools (luacheck etc.)
 .tools/
 

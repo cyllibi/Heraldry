@@ -2,7 +2,9 @@
 
 Heraldry shows an icon next to the names of chosen guilds and players on nameplates.
 It grew out of an earlier single-guild prototype and targets **WoW Forever only** (interface `16001`).
-The audience is the Kachow guild, distributed through CurseForge.
+It is a standalone add-on: Blizzard's own nameplates are the primary target and work with nothing else
+installed; EllesmereUI Nameplates is recommended for a nicer look and fully supported. Distributed through
+CurseForge.
 
 ## Goal
 Players pick an icon for any guild (their own, allies, enemies) and, optionally, for individual players.
