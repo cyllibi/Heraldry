@@ -43,7 +43,7 @@ read_globals = {
     "CreateMinimalSliderFormatter", "CreateScrollBoxListLinearView", "DEFAULT_CHAT_FRAME", "GameTooltip",
     "GameTooltip_Hide", "MenuUtil", "MinimalSliderWithSteppersMixin", "Mixin", "PanelTemplates_DeselectTab",
     "PanelTemplates_SelectTab", "PanelTemplates_TabResize", "PlaySound", "ScrollBoxConstants", "ScrollUtil",
-    "Settings", "SettingsPanel", "HideUIPanel", "SOUNDKIT", "UIParent", "LibStub", "Minimap",
+    "Settings", "SettingsPanel", "HideUIPanel", "IsShiftKeyDown", "SOUNDKIT", "UIParent", "LibStub", "Minimap",
 
     -- Global strings and colors
     "ADD", "CANCEL", "REMOVE", "SEARCH", "STANDARD_TEXT_FONT",

@@ -556,6 +556,94 @@ test("the minimap button state is repaired and kept", function()
     eq(DB.NormalizeUI(nil).minimap.hide, false)
 end)
 
+test("minimap clicks: target shortcuts, pages without a target, middle-click clears", function()
+    -- The click handler, with the options stubbed to record what was asked of them.
+    local calls = {}
+    local savedOptions, savedShift = ns.Options, IsShiftKeyDown
+    ns.Options = {
+        Open = function(_, page) calls[#calls + 1] = "open " .. tostring(page) end,
+        Toggle = function() calls[#calls + 1] = "toggle" end,
+        EditMyGuild = function() calls[#calls + 1] = "my guild" end,
+        EditTargetRule = function(_, kind)
+            local key, reason = Rules:TargetSubject(kind)
+            if not key then return false, reason end
+            calls[#calls + 1] = "edit " .. kind .. " " .. key
+            return true
+        end,
+    }
+    local shift = false
+    IsShiftKeyDown = function() return shift end
+    assert(loadfile(ADDON .. "/MinimapButton.lua"))(ADDON, ns)
+    local Click = ns.MinimapButton.Click
+    local function last() return calls[#calls] end
+
+    stub.units.target = nil
+    Click("LeftButton"); eq(last(), "open players", "no target: click")
+    Click("RightButton"); eq(last(), "open guilds", "no target: right-click")
+    Click("MiddleButton"); eq(last(), "toggle", "no target: middle-click")
+    eq(ns.MinimapButton.ClickLines()[1], L.MINIMAP_TIP_LEFT_PAGE, "tooltip without a target")
+
+    local enabled = ns.profile.display.enabled
+    shift = true
+    Click("LeftButton"); eq(ns.profile.display.enabled, not enabled, "shift-click toggles icons")
+    stub.units.target = { player = true, name = "Goober", surname = "Ppea", guild = "Clickers" }
+    local count = #calls
+    Click("RightButton"); eq(ns.profile.display.enabled, enabled, "with a target too, any button")
+    eq(#calls, count, "shift-click does nothing else")
+    shift = false
+
+    local playerKey = Rules:TargetSubject("players")
+    local guildKey = Rules:TargetSubject("guilds")
+    Click("LeftButton"); eq(last(), "edit players " .. playerKey, "target: click picks for the player")
+    Click("RightButton"); eq(last(), "edit guilds " .. guildKey, "target: right-click picks for the guild")
+    local lines = ns.MinimapButton.ClickLines()
+    eq(lines[1], L.MINIMAP_TIP_LEFT_NAMED:format("Goober Ppea"), "tooltip names the target")
+    eq(lines[2], L.MINIMAP_TIP_RIGHT_NAMED:format("Clickers"), "and the guild")
+
+    Rules:Set("players", playerKey, "Goober Ppea", "lib:gi_checked_shield")
+    Rules:Set("guilds", guildKey, "Clickers", "lib:gi_checked_shield")
+    count = #calls
+    truthy(ns.MinimapButton.ClickLines()[3]:find(L.MINIMAP_CLEARED_GUILD:format("Clickers"), 1, true),
+        "the middle-click line says what it would remove")
+    Click("MiddleButton")
+    eq(#calls, count, "middle-click with a target never opens anything")
+    eq(Rules:Get("players", playerKey), nil, "player rule removed")
+    eq(Rules:Get("guilds", guildKey), nil, "guild rule removed")
+    eq(stub.lastMessage:find(L.MINIMAP_CLEARED_PLAYER:format("Goober Ppea"), 1, true) ~= nil, true, "says so")
+    eq(ns.MinimapButton.ClickLines()[3], L.MINIMAP_TIP_MIDDLE_NOTHING, "then nothing to remove")
+    Click("MiddleButton")
+    truthy(stub.lastMessage:find(L.MINIMAP_CLEARED_NOTHING, 1, true), "nothing left to remove")
+    ns.MinimapButton.Undo()
+    eq(Rules:Get("players", playerKey).icon, "lib:gi_checked_shield", "undo puts the player rule back")
+    eq(Rules:Get("guilds", guildKey).name, "Clickers", "and the guild rule")
+    ns.MinimapButton.Undo()
+    truthy(stub.lastMessage:find(L.UNDO_NOTHING, 1, true), "undo works once")
+    Rules:Remove("players", playerKey)
+    Rules:Remove("guilds", guildKey)
+
+    Rules:Set("guilds", guildKey, "Clickers", "lib:gi_checked_shield")
+    Click("MiddleButton")
+    eq(Rules:Get("guilds", guildKey), nil, "a guild rule alone goes too")
+    truthy(stub.lastMessage:find(L.MINIMAP_CLEARED_GUILD:format("Clickers"), 1, true), "and is named")
+
+    stub.units.target = { player = false, name = "Hogger" }
+    Click("LeftButton")
+    truthy(stub.lastMessage:find(L.TARGET_NOT_PLAYER, 1, true), "an NPC target says why")
+    Click("MiddleButton")
+    truthy(stub.lastMessage:find(L.TARGET_NOT_PLAYER, 1, true), "middle-click on an NPC says why")
+    eq(ns.MinimapButton.ClickLines()[1], L.MINIMAP_TIP_LEFT_TARGET, "tooltip without a readable name")
+
+    local savedIsUnit = UnitIsUnit
+    UnitIsUnit = function() return true end -- the target is you
+    stub.units.target = { player = true, name = "Me", surname = "Myself", guild = "Clickers" }
+    Click("RightButton"); eq(last(), "my guild", "right-click on yourself edits My guild")
+    eq(ns.MinimapButton.ClickLines()[2], L.MINIMAP_TIP_RIGHT_MY_GUILD, "and the tooltip says so")
+    UnitIsUnit = savedIsUnit
+
+    stub.units.target = nil
+    ns.Options, IsShiftKeyDown = savedOptions, savedShift
+end)
+
 test("seen lists are capped but the seen mark is not", function()
     local first = Identity:GetRuleset() .. "/seenguild"
     for i = 1, 60 do

@@ -5,6 +5,7 @@
   /heraldry check     what the client exposes about your target, for bug reports
   /heraldry try       show the Display page's preview icon on your target for 10 seconds
   /heraldry minimap   show or hide the minimap button
+  /heraldry undo      put back what the minimap button's middle-click removed
   /heraldry help      this list ]]
 
 local _, ns = ...
@@ -43,6 +44,7 @@ local COMMANDS = {
     check = Check,
     try = Try,
     minimap = ToggleMinimap,
+    undo = function() ns.MinimapButton.Undo() end,
     help = function()
         for line in L.SLASH_HELP_BODY:gmatch("[^\n]+") do ns.Print(line) end
     end,

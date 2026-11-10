@@ -30,10 +30,20 @@ output of `/heraldry check` with the affected player targeted.
       still has `version = 99` and the original rules. Restore the file afterwards.
 
 ## Minimap button
-- [ ] The Checked Shield button is on the minimap; its tooltip lists click, right-click and drag. Click opens
-      the options; click again with a Heraldry page showing closes them.
-- [ ] Right-click with the tooltip up: icons on plates turn off, the tooltip says so; right-click again turns
-      them back on.
+- [ ] The Checked Shield button is on the minimap. With no target its tooltip lists: click (Players page),
+      right-click (Guilds page), middle-click (options), shift-click, drag. Each opens that page; middle-click
+      again with a Heraldry page showing closes the options.
+- [ ] Target a guilded player: the tooltip names them and their guild. Click opens the icon picker for the
+      player, right-click for the guild; choosing an icon makes the rule. Middle-click removes both rules and
+      says so in chat ("Removed the player icon for ... and the guild icon for <...>. Type /heraldry undo to
+      restore."); the tooltip's middle-click line named both beforehand and now says "nothing to remove".
+      `/heraldry undo` restores both with their icons; a second `/heraldry undo` says there is nothing to undo.
+      A target with only a guild rule loses just that.
+- [ ] Target an NPC: click and right-click say "Your target is not a player."; target yourself: click says
+      "That's you...", right-click opens the picker for the My guild icon (not a plain guild rule). Target a player without a guild: right-click
+      says they are not in a guild.
+- [ ] Shift-click with the tooltip up: icons on plates turn off, the tooltip says so; shift-click again turns
+      them back on (with or without a target).
 - [ ] Drag it around the minimap, `/reload`: it stays where you left it.
 - [ ] Untick "Minimap button" on the first page: the button goes. `/heraldry minimap` brings it back and the
       checkbox follows.
@@ -42,9 +52,10 @@ output of `/heraldry check` with the affected player targeted.
       ends; no "action blocked" message or Lua error, and a game setting changed just before (on another
       page) is kept. With the options closed, a click in combat says they open after combat, and they do.
 - [ ] Reopening with the button returns to the Heraldry page used last.
-- [ ] The add-on drawer's Heraldry entry: click and right-click do the same as the button.
-- [ ] **EllesmereUI minimap flyout:** the shield appears in the flyout labelled Heraldry; click, right-click
-      and the tooltip work there (no "Drag" line in the flyout). With the flyout closed, untick the checkbox:
+- [ ] The add-on drawer's Heraldry entry: click, right-click, middle-click and shift-click do the same as the
+      button.
+- [ ] **EllesmereUI minimap flyout:** the shield appears in the flyout labelled Heraldry; click, right-click,
+      middle-click, shift-click and the tooltip work there (no "Drag" line in the flyout). With the flyout closed, untick the checkbox:
       the button is gone from the flyout without a gap; tick it: it comes back. (EUI re-shows a button that
       hides while its flyout is open, so test with it closed.)
 - [ ] **EnhanceQoL's Minimap Button Bin** (if used): the button is binned; hiding and showing it with the

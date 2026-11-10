@@ -25,5 +25,7 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
   elements and more, outlined so they read on any ground, sharp at 128 px (compressed BLP), grouped into
   categories in the picker and searchable by theme, class and role words.
 - A minimap button (LibDBIcon, so minimap button collectors such as MinimapButtonButton pick it up), with
-  `/heraldry minimap` to show or hide it.
+  `/heraldry minimap` to show or hide it. It is a shortcut: with a target, click and right-click choose icons
+  for the target and their guild and middle-click removes them; without one, they open the Players page, the
+  Guilds page and the options; shift-click shows or hides icons.
 - Guild and player name boxes complete names seen on nameplates this session; the Seen lists scroll.

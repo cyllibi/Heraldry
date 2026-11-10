@@ -132,16 +132,12 @@ ns.RegisterEvent("PLAYER_LOGIN", function()
 end)
 
 -- Addon compartment (the add-on drawer by the minimap). A TOC-declared global by design.
--- Same clicks as the minimap button.
+-- Same clicks as the minimap button (MinimapButton.lua).
 function Heraldry_OnAddonCompartmentClick(_, mouseButton)
-    if mouseButton == "RightButton" then
-        ns.ToggleIcons()
-    else
-        ns.Options:Toggle()
-    end
+    ns.MinimapButton.Click(mouseButton)
 end
 
--- Right-click on the minimap button or the compartment entry: the master switch.
+-- Shift-click on the minimap button or the compartment entry: the master switch.
 function ns.ToggleIcons()
     ns.DB:SetDisplay("enabled", not ns.profile.display.enabled)
 end

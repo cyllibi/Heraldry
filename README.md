@@ -48,9 +48,19 @@ player.
 
 ## Use
 - `/heraldry` opens the options (also under Game Menu > Options > AddOns, and the add-on drawer).
-- The minimap button (a gold shield): click for the options, right-click to show or hide icons, drag to move.
-  Minimap button collectors (EllesmereUI's minimap, MinimapButtonButton) pick it up. `/heraldry minimap`
-  or the checkbox on the options' first page hides it.
+- The minimap button (a gold shield) is a shortcut:
+
+  | | With a target | Without a target |
+  |---|---|---|
+  | Click | Choose an icon for your target | Open the Players page |
+  | Right-click | Choose an icon for your target's guild | Open the Guilds page |
+  | Middle-click | Remove your target's player and guild icons | Open or close the options |
+  | Shift-click | Show or hide icons | Show or hide icons |
+
+  `/heraldry undo` puts back what a middle-click removed. Drag the button to move it. The add-on drawer entry
+  works the same way. Minimap button collectors (EllesmereUI's
+  minimap, MinimapButtonButton) pick it up. `/heraldry minimap` or the checkbox on the options' first page
+  hides it.
 - `/heraldry guild` picks an icon for your target's guild; `/heraldry player` for your target;
   `/heraldry try` shows your preview icon on your target for 10 seconds.
 - `/heraldry check` shows what the game tells add-ons about your target, for bug reports; the same report
