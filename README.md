@@ -29,6 +29,14 @@ player.
 
 <table>
   <tr>
+    <td width="50%"><img src="docs/images/icon-library.jpg" alt="The icon picker's Library tab: black-and-white heraldic icons such as shields, emblems, banners and flags"></td>
+    <td width="50%"><img src="docs/images/options-guilds.png" alt="The Guilds page: guilds with library, game and Twitch emote icons"></td>
+  </tr>
+  <tr>
+    <td align="center">The Library: over 400 heraldic icons in 14 categories</td>
+    <td align="center">Guilds and their icons</td>
+  </tr>
+  <tr>
     <td width="50%"><img src="docs/images/icon-picker.jpg" alt="The icon picker's Game icons tab, searching &quot;dragon&quot;: a full grid of dragon icons"></td>
     <td width="50%"><img src="docs/images/options-display.png" alt="The Display page: position, size, gap, offsets, opacity, where icons show, and a live preview with a shield icon"></td>
   </tr>
