@@ -29,20 +29,20 @@ player.
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/options-display.png" alt="The Display page: position, size, gap, offsets, opacity, where icons show, and a live preview"></td>
-    <td width="50%"><img src="docs/images/options-general.png" alt="The first options page: status, your target, and diagnostics"></td>
+    <td width="50%"><img src="docs/images/icon-picker.jpg" alt="The icon picker's Game icons tab, searching &quot;dragon&quot;: a full grid of dragon icons"></td>
+    <td width="50%"><img src="docs/images/options-display.png" alt="The Display page: position, size, gap, offsets, opacity, where icons show, and a live preview with a shield icon"></td>
   </tr>
   <tr>
+    <td align="center">The icon picker: game icons named by every ability that uses them</td>
     <td align="center">Display: layout, where icons show, live preview</td>
-    <td align="center">Status, your target and diagnostics</td>
   </tr>
   <tr>
+    <td width="50%"><img src="docs/images/options-general.png" alt="The first options page: status, your target, and diagnostics"></td>
     <td width="50%"><img src="docs/images/options-sharing.png" alt="The Sharing page: export your rules as a string, or import and preview one"></td>
-    <td></td>
   </tr>
   <tr>
+    <td align="center">Status, your target and diagnostics</td>
     <td align="center">Sharing: export and import rules as text</td>
-    <td></td>
   </tr>
 </table>
 
