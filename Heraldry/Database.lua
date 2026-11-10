@@ -58,6 +58,8 @@ local DISPLAY_DEFAULTS = {
     strictPlayers = false,
     -- Plates from a nameplate add-on Heraldry has no adapter for: icon above the plate.
     unknownPlates = true,
+    -- Blizzard's plates with a health bar: a taller icon spanning the name and the bar.
+    tallBlizzard = false,
 }
 DB.DISPLAY_DEFAULTS = DISPLAY_DEFAULTS
 

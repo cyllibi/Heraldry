@@ -834,6 +834,80 @@ local function place(fontString, hints, overrides)
     return topLeft[3], (topLeft[4] + bottomRight[4]) / 2, (topLeft[5] + bottomRight[5]) / 2
 end
 
+test("placement: tall icon beside a Blizzard plate's name and bar", function()
+    local bar, level = stub.Region(), stub.Region()
+    local span = { left = bar, right = level, height = 30, lift = 9 }
+    local region = Plates.NewRegion(CreateFrame())
+    Plates.Layout(region, name("Fast Racer"), { span = span }, square, display({ tallBlizzard = true }))
+    local topLeft, bottomRight = region.texture.points[1], region.texture.points[2]
+    eq(topLeft[2], bar, "beside the bar, not the name")
+    eq(topLeft[3], "LEFT")
+    eq((topLeft[4] + bottomRight[4]) / 2, -(2 + 15), "gap + half the 30 px icon")
+    eq((topLeft[5] + bottomRight[5]) / 2, 9, "centred on the name and bar together")
+    eq(topLeft[5] - bottomRight[5], 30, "as tall as both")
+
+    region = Plates.NewRegion(CreateFrame())
+    Plates.Layout(region, name("Fast Racer"), { span = span }, square,
+        display({ tallBlizzard = true, position = "RIGHT", scale = 0.5 }))
+    topLeft = region.texture.points[1]
+    eq(topLeft[2], level, "right of the level box")
+    eq(topLeft[3], "RIGHT")
+
+    local point = place(name("Fast Racer"), { span = span }, { tallBlizzard = false })
+    eq(point, "CENTER", "off: the normal placement")
+    point = place(name("Fast Racer"), { span = span }, { tallBlizzard = true, position = "TOP" })
+    eq(point, "TOP", "above or below the name: the normal placement")
+end)
+
+test("blizzard plates: the tall icon's span from the bar and Forever's layout", function()
+    local adapter
+    local copy = setmetatable({ Plates = { RegisterAdapter = function(_, a) adapter = a end } }, { __index = ns })
+    assert(loadfile(ADDON .. "/Plates/Blizzard.lua"))(ADDON, copy)
+    local function Frame(fields)
+        local frame = { IsShown = function() return true end }
+        for key, value in pairs(fields or {}) do frame[key] = value end
+        return frame
+    end
+    local saved = { NamePlateConstants, NamePlateSetupOptions }
+    NamePlateConstants = { NAME_ANCHOR_STYLES = { InsideHealthBar = 1, AboveHealthBar = 3 } }
+    NamePlateSetupOptions = { unitNameAnchorStyle = 3, healthBarHeight = 10, healthBarFontHeight = 12,
+        healthBarToNameAboveSpacing = 2 }
+
+    local bar = Frame({ GetHeight = function() return 11 end })
+    local unitFrame = { HealthBarsContainer = bar, name = name("Fast Racer") }
+    local span = adapter.Span(unitFrame, {})
+    eq(span.left, bar)
+    eq(span.right, bar, "no level box: right of the bar")
+    eq(span.height, 11 + 2 + 12, "the bar's own height, the spacing and the name")
+    eq(span.lift, (25 - 11) / 2)
+
+    unitFrame.RaidTargetFrame = Frame({ IsShown = function() return false end })
+    unitFrame.ClassificationFrame = Frame({ IsShown = function() return false end })
+    eq(adapter.Span(unitFrame, {}).left, bar, "no marker or classification showing: beside the bar")
+    unitFrame.RaidTargetFrame.IsShown = function() return true end
+    eq(adapter.Span(unitFrame, {}).left, unitFrame.RaidTargetFrame, "past a raid marker")
+    unitFrame.ClassificationFrame.IsShown = function() return true end
+    eq(adapter.Span(unitFrame, {}).left, unitFrame.ClassificationFrame, "past the classification icon too")
+    unitFrame.RaidTargetFrame, unitFrame.ClassificationFrame = nil, nil
+
+    bar.GetHeight = function() return stub.Secret() end
+    unitFrame.PlayerLevelDiffFrame = Frame()
+    span = adapter.Span(unitFrame, {})
+    eq(span.height, 10 + 2 + 12, "a secret height: Forever's healthBarHeight")
+    eq(span.right, unitFrame.PlayerLevelDiffFrame, "past the level box when it shows")
+
+    NamePlateSetupOptions.unitNameAnchorStyle = 1
+    eq(adapter.Span(unitFrame, {}).height, 10, "name inside the bar: the bar alone")
+
+    unitFrame.IsShowOnlyName = function() return true end
+    eq(adapter.Span(unitFrame, {}), nil, "a names-only plate gets no span")
+    unitFrame.IsShowOnlyName = nil
+    bar.IsShown = function() return stub.Secret() end
+    eq(adapter.Span(unitFrame, {}), nil, "nor does a bar whose visibility is secret")
+
+    NamePlateConstants, NamePlateSetupOptions = saved[1], saved[2]
+end)
+
 test("placement: tight box", function()
     local point, x, y = place(name("Fast Racer"), { tight = true })
     eq(point, "LEFT")

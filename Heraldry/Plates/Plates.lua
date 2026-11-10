@@ -17,7 +17,7 @@
                        adapters may still claim it (Blizzard, when the add-on leaves the
                        plate to Blizzard), but the generic fallback won't, so no icon
                        floats over a plate an add-on chose to hide.
-                       hints (plain values only, optional):
+                       hints (non-secret values only, optional):
                          tight = true      the FontString's box hugs the text (auto width)
                          fontSize = n      the name's size, when the add-on knows it
                          boxWidth = n      width of a fixed name box: long names are cut
@@ -30,6 +30,13 @@
                          anchorOnly = true anchor is not a name but a frame to sit above
                                            (generic fallback); host = the frame to draw on,
                                            lift = extra height above it
+                         span = { left, right, height, lift }
+                                           Blizzard plates with a health bar: frames whose
+                                           outer edges the icon sits beside on each side,
+                                           the height of the name and bar together, and how
+                                           far the middle of that is above the frames'
+                                           middle. Used when display.tallBlizzard is on and
+                                           the icon goes left or right of the name.
 
   The icon is a texture on the name FontString's parent frame ("host"), so it follows
   that frame's visibility, alpha and scale. One texture per host, reused as plates are
@@ -243,17 +250,37 @@ local function Placement(region, fontString, hints, display, size, iconWidth, ic
     return point, 0, y
 end
 
+-- The tall icon beside a Blizzard plate's name and health bar (hints.span), or nil.
+local function SpanPlacement(hints, display, spec)
+    local span = hints and hints.span
+    if not (span and display.tallBlizzard) then return nil end
+    local position = display.position
+    if position ~= "LEFT" and position ~= "RIGHT" then return nil end
+    local left = position == "LEFT"
+    local height = span.height * display.scale
+    local width = height * spec.aspect
+    local x = display.gap + width / 2
+    return left and span.left or span.right, position, left and -x or x, span.lift, width, height
+end
+
 -- Anchors region's texture next to the anchor. Shared by the plates and the previews.
 function Plates.Layout(region, anchor, hints, spec, display)
-    local size
-    if not (hints and hints.anchorOnly) then
-        local _
-        _, size = anchor:GetFont()
+    local point, x, y, width, height
+    local spanAnchor
+    spanAnchor, point, x, y, width, height = SpanPlacement(hints, display, spec)
+    if spanAnchor then
+        anchor = spanAnchor
+    else
+        local size
+        if not (hints and hints.anchorOnly) then
+            local _
+            _, size = anchor:GetFont()
+        end
+        if IsSecret(size) or not size or size <= 0 then size = hints and hints.fontSize or DEFAULT_FONT_SIZE end
+        height = size * display.scale
+        width = height * spec.aspect
+        point, x, y = Placement(region, anchor, hints, display, size, width, height)
     end
-    if IsSecret(size) or not size or size <= 0 then size = hints and hints.fontSize or DEFAULT_FONT_SIZE end
-    local height = size * display.scale
-    local width = height * spec.aspect
-    local point, x, y = Placement(region, anchor, hints, display, size, width, height)
     x, y = x + display.x, y + display.y
 
     local last = region.layout

@@ -16,6 +16,7 @@ local PREVIEW_BAR_WIDTH, PREVIEW_BAR_HEIGHT = 120, 12
 local NAME_ONLY_HINTS = { tight = true }
 -- The enemy name box has a fixed width: long names stop at its edge.
 local ENEMY_HINTS = { boxWidth = PREVIEW_BAR_WIDTH }
+local PREVIEW_NAME_SPACING = 4   -- the enemy sample's name sits this far above its bar
 local SAMPLE_ICON_PATH = [[Interface\Icons\INV_Shirt_GuildTabard_01]]
 
 local previewIcon -- chosen with "Preview icon"; not saved
@@ -128,9 +129,24 @@ local function BuildPreview(page, parent)
         enemy:SetFont(file, enemySize, "OUTLINE")
     end
 
+    -- The tall icon option applies to Blizzard's plates, so the preview shows it only when
+    -- EllesmereUI's plates (which keep their own layout) aren't loaded.
+    local enemySpan = { left = bar, right = bar }
+    local function UpdateSpan(display)
+        if display.tallBlizzard and type(EllesmereNameplates_NS) ~= "table" then
+            local _, size = enemy:GetFont()
+            enemySpan.height = PREVIEW_BAR_HEIGHT + PREVIEW_NAME_SPACING + (size or ENEMY_FONT_SIZE)
+            enemySpan.lift = (enemySpan.height - PREVIEW_BAR_HEIGHT) / 2
+            ENEMY_HINTS.span = enemySpan
+        else
+            ENEMY_HINTS.span = nil
+        end
+    end
+
     page:AddRefresh(function()
         local display = ns.profile.display
         ApplyFonts()
+        UpdateSpan(display)
         friendly:SetText(L.PREVIEW_FRIENDLY_NAME .. "\n" .. L.PREVIEW_GUILD_LINE)
         local spec = ns.Icons:Resolve(ns.Options:PreviewIcon())
         for _, pair in ipairs({ { friendlyRegion, friendly, NAME_ONLY_HINTS }, { enemyRegion, enemy, ENEMY_HINTS } }) do
@@ -199,9 +215,12 @@ ns.Options:AddPage("display", L.PAGE_DISPLAY, function(page, content)
         row:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -Widgets.ROW_SPACING)
         previous = row
     end
+    local tall = Check("tallBlizzard", L.TALL_BLIZZARD, L.TALL_BLIZZARD_TOOLTIP)
+    tall:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", -4, -6)
+    previous = tall
 
     local whereHeader = Widgets.Header(content, L.WHERE)
-    whereHeader:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -14)
+    whereHeader:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 4, -14)
     local world = Check("world", L.WHERE_WORLD)
     world:SetPoint("TOPLEFT", whereHeader, "BOTTOMLEFT", -4, -6)
     local dungeon = Check("dungeon", L.WHERE_DUNGEON)
@@ -223,9 +242,12 @@ ns.Options:AddPage("display", L.PAGE_DISPLAY, function(page, content)
 
     page:AddRefresh(function()
         local on = ns.profile.display.enabled
+        local beside = ns.profile.display.position == "LEFT" or ns.profile.display.position == "RIGHT"
         for _, control in ipairs(controls) do
             control:Refresh()
-            if control ~= enabled then control:SetActive(on) end
+            -- The tall icon only applies beside the name, not above or below it.
+            if control == tall then control:SetActive(on and beside)
+            elseif control ~= enabled then control:SetActive(on) end
         end
     end)
 end)

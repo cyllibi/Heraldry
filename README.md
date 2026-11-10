@@ -21,7 +21,7 @@ player.
   small Forever plate add-ons) the icon sits centred above the nameplate; plates a known add-on hides never
   get an icon.
 - Position, size, gap, offsets and opacity, with a live preview; per-context visibility (world, dungeons,
-  raids, PvP, combat).
+  raids, PvP, combat). On Blizzard's own nameplates the icon can span the name and health bar, like a crest.
 - Settings shared by all characters, or per character.
 - Share your setup as a text string; others preview it before applying.
 

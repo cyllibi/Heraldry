@@ -267,7 +267,8 @@ HeraldryDB = {
     display = { enabled = true, friendly = true, enemy = true, position = "LEFT",
                 scale = 1.0, alpha = 1.0, gap = 2, x = 0, y = 0,
                 world = true, dungeon = true, raid = true, pvp = true,
-                hideInCombat = false, strictPlayers = false },
+                hideInCombat = false, strictPlayers = false, unknownPlates = true,
+                tallBlizzard = false },
   },
 }
 HeraldryCharDB = { version = 1, useCharacter = false, profile = nil }
@@ -294,7 +295,13 @@ HeraldryCharDB = { version = 1, useCharacter = false, profile = nil }
     show static icons that animate on hover and a dot for guilds seen this session. A typed player name
     without a surname is accepted with a warning (most characters have one).
   - **Players:** the same for characters.
-  - **Display:** the options above, with a live preview using the real layout code.
+  - **Display:** the options above, with a live preview using the real layout code. "Tall icon on Blizzard
+    nameplates" (off by default) makes the icon on Blizzard plates that show a health bar as tall as the name
+    and bar together, just outside the bar (left of it and of the raid marker or classification icon when they
+    show, or right of the level box); Size scales it from
+    there. The heights come from the bar itself when readable, else Forever's NamePlateSetupOptions;
+    names-only plates, EllesmereUI and other add-ons keep the normal icon. The preview shows it only when
+    EllesmereUI's plates aren't loaded.
   - **Sharing:** export and import.
   - **Custom icons** (last): register, preview, remove.
   - Profile checkbox at the top of every page.

@@ -166,6 +166,12 @@ Check icon position against the name, size, and that it moves with the plate.
       with "...": the icon sits clear of the first letter (`/heraldry check` shows the box width; compare
       with the bar). Repeat with Options > Nameplates size set to Large and to the Classic style.
 - [ ] Forever's level indicator and the icon don't overlap in the default position.
+- [ ] Display > "Tall icon on Blizzard nameplates": on plates with a health bar the icon becomes as tall as the
+      name and bar together, just left of the bar, top level with the name's top and bottom with the bar's;
+      Position Right puts it right of the level box. Mark a player with a raid marker: the icon moves left
+      of the marker (and of a PvP or elite icon when one shows). The checkbox dims with Position Top or Bottom. Size shrinks or grows it from there. Names-only friendly
+      plates keep the normal icon. Try the Classic style and a Large nameplate size too. With EllesmereUI's
+      plates loaded the option changes nothing, and the preview doesn't show it.
 
 ## Nameplates: other add-ons (one at a time, EllesmereUINameplates disabled)
 For each, check friendly and enemy plates, that `/heraldry check` names the add-on that drew the icon, and
