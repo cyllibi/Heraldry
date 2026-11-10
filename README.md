@@ -6,7 +6,7 @@ player.
 
 <p align="center">
   <img src="docs/images/nameplates.png" alt="Library icons (a crowned skull, a wolf shield, a howling wolf) beside player names on nameplates" width="49%">
-  <img src="docs/images/nameplates-2.png" alt="Shield icons beside player names on nameplates at night" width="49%">
+  <img src="docs/images/nameplates-crowd.jpg" alt="A crowded room on EllesmereUI nameplates: guild shields beside several players' names" width="49%">
 </p>
 
 ## Features
@@ -53,12 +53,20 @@ player.
     <td align="center">Sharing: export and import rules as text</td>
   </tr>
   <tr>
+    <td width="50%"><img src="docs/images/blizzard-above.jpg" alt="A crowd on Blizzard nameplates: guild shields above several players' names"></td>
     <td width="50%"><img src="docs/images/blizzard-tall.jpg" alt="Blizzard nameplates with the tall icon option: icons as tall as the name and health bar, beside the bar"></td>
-    <td width="50%"><img src="docs/images/options-custom.png" alt="The Custom icons page: register your own TGA or BLP images by file name"></td>
   </tr>
   <tr>
+    <td align="center">Blizzard nameplates: icons above the name</td>
     <td align="center">Blizzard nameplates with the tall icon option</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/options-custom.png" alt="The Custom icons page: register your own TGA or BLP images by file name"></td>
+    <td></td>
+  </tr>
+  <tr>
     <td align="center">Custom icons: your own images</td>
+    <td></td>
   </tr>
 </table>
 
