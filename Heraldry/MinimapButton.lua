@@ -19,7 +19,8 @@
     shift-click   show or hide icons (any button, target or not)
   A target the action can't use (an NPC, yourself, a hidden name) gets a chat line saying
   why, as /heraldry player and /heraldry guild do. Right-click on yourself edits the
-  My guild icon, which a plain rule for your own guild would silently override. Dragging moves the button around the
+  My guild icon, which a plain rule for your own guild would silently override; on a
+  player in no guild it opens the Guilds page, as with no target. Dragging moves the button around the
   minimap. Its position and whether it shows are saved account-wide in
   HeraldryDB.ui.minimap, the table format LibDBIcon reads and writes.
 
@@ -54,11 +55,24 @@ local function TargetIsSelf()
     return ns.Rules:ReadUnit("target").isSelf
 end
 
+-- True when the target is a player the game shows to be in no guild (not hidden).
+local function TargetHasNoGuild()
+    local _, reason = ns.Rules:TargetSubject("guilds")
+    return reason == L.TARGET_NO_GUILD
+end
+
 local function EditTargetRule(kind)
-    -- Your own guild has its own rule (My guild); a plain rule would silently override it.
-    if kind == "guilds" and TargetIsSelf() then
-        ns.Options:EditMyGuild()
-        return
+    if kind == "guilds" then
+        -- Your own guild has its own rule (My guild); a plain rule would silently override it.
+        if TargetIsSelf() then
+            ns.Options:EditMyGuild()
+            return
+        end
+        -- No guild to choose for: the Guilds page, as with no target.
+        if TargetHasNoGuild() then
+            ns.Options:Open("guilds")
+            return
+        end
     end
     local ok, reason = ns.Options:EditTargetRule(kind)
     if not ok then ns.Print(reason) end
@@ -159,6 +173,8 @@ function MinimapButton.ClickLines()
     local right
     if TargetIsSelf() then
         right = L.MINIMAP_TIP_RIGHT_MY_GUILD
+    elseif TargetHasNoGuild() then
+        right = L.MINIMAP_TIP_RIGHT_PAGE
     else
         right = guildKey and L.MINIMAP_TIP_RIGHT_NAMED:format(guildName) or L.MINIMAP_TIP_RIGHT_TARGET
     end

@@ -309,7 +309,8 @@ HeraldryCharDB = { version = 1, useCharacter = false, profile = nil }
   settings are changed in the options. With a target, click picks an icon for the target, right-click for the
   target's guild, and middle-click removes the target's player and guild rules (whichever exist, saying what
   went in chat; `/heraldry undo` puts them back, the rule lists' undo-not-confirm rule). Right-click on
-  yourself edits the My guild icon instead of making a plain rule that would override it. Without a target, click opens the Players page, right-click the Guilds page, and
+  yourself edits the My guild icon instead of making a plain rule that would override it; on a player in no
+  guild it opens the Guilds page, as with no target. Without a target, click opens the Players page, right-click the Guilds page, and
   middle-click opens or closes the options. Shift-click (any button) turns icons on or off; drag moves it.
   A target an action can't use (an NPC, yourself, a hidden name) gets the same chat line as `/heraldry
   player` and `/heraldry guild`. The tooltip names the target and guild a click would act on, and what a

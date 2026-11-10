@@ -626,6 +626,11 @@ test("minimap clicks: target shortcuts, pages without a target, middle-click cle
     eq(Rules:Get("guilds", guildKey), nil, "a guild rule alone goes too")
     truthy(stub.lastMessage:find(L.MINIMAP_CLEARED_GUILD:format("Clickers"), 1, true), "and is named")
 
+    stub.units.target = { player = true, name = "Lone", surname = "Wolf" }
+    Click("RightButton"); eq(last(), "open guilds", "a player in no guild: the Guilds page")
+    eq(ns.MinimapButton.ClickLines()[2], L.MINIMAP_TIP_RIGHT_PAGE, "and the tooltip says so")
+    Click("LeftButton"); eq(last(), "edit players lone wolf", "click still picks for the player")
+
     stub.units.target = { player = false, name = "Hogger" }
     Click("LeftButton")
     truthy(stub.lastMessage:find(L.TARGET_NOT_PLAYER, 1, true), "an NPC target says why")

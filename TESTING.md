@@ -40,8 +40,8 @@ output of `/heraldry check` with the affected player targeted.
       `/heraldry undo` restores both with their icons; a second `/heraldry undo` says there is nothing to undo.
       A target with only a guild rule loses just that.
 - [ ] Target an NPC: click and right-click say "Your target is not a player."; target yourself: click says
-      "That's you...", right-click opens the picker for the My guild icon (not a plain guild rule). Target a player without a guild: right-click
-      says they are not in a guild.
+      "That's you...", right-click opens the picker for the My guild icon (not a plain guild rule). Target a player without a
+      guild: right-click opens the Guilds page, and the tooltip says so.
 - [ ] Shift-click with the tooltip up: icons on plates turn off, the tooltip says so; shift-click again turns
       them back on (with or without a target).
 - [ ] Drag it around the minimap, `/reload`: it stays where you left it.
