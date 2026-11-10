@@ -29,6 +29,19 @@
   healthBarHeight, healthBarFontHeight and healthBarToNameAboveSpacing. Styles that put
   the name inside the bar use the bar's height alone.
 
+  Above the name, Forever stacks the debuff row and, on names-only plates, the raid marker.
+  An icon placed above the name goes above them, so it never covers debuffs or the marker:
+    * the raid marker is centred on the name (BOTTOM to the name's TOP, 10 px up), so the
+      icon anchors to its top edge (hints.topAnchor)
+    * the debuff row is not centred: its left edge is pinned to the bar's and it grows to
+      the right (Blizzard_NamePlateUnitFrame.lua, UpdateAnchors, "Auras Frame"), so its top
+      centre drifts left of the name (seen in game). The icon stays centred on the name
+      and is lifted by the row's height plus Forever's nameplateDebuffPadding
+      (hints.topLift). The row is shown or hidden by the aura display settings, not by
+      whether debuffs are up (Blizzard_NamePlateAuras.lua, Update*AuraFrames); its height
+      follows its debuffs, re-read whenever the unit's auras change (UNIT_AURA). When the
+      height is secret, one row's height is assumed.
+
   Blizzard's crowd-control and loss-of-control icons (AurasFrame, right of the bar) may
   overlap a right-side icon. They win: Heraldry's icon is a texture on the UnitFrame
   itself, and AurasFrame is a child frame a level up, so it always draws on top. Keep it
@@ -117,6 +130,32 @@ end
 
 local SPAN = {}
 
+-- What Blizzard stacks above the name, for an icon placed above it: the raid marker on a
+-- names-only plate, else the debuff row while it shows; nil when neither is plainly shown.
+function adapter.TopAnchor(unitFrame)
+    if not Plainly(unitFrame, "IsShowOnlyName") then return nil end
+    local raid = unitFrame.RaidTargetFrame
+    return Plainly(raid, "IsShown") and raid or nil
+end
+
+local AURA_ROW_HEIGHT = 25 -- NamePlateConstants.AURA_ITEM_HEIGHT, if the constants are missing
+
+-- How far above the name an icon placed there must go to clear the debuff row: the row's
+-- height (0 with no debuffs up) plus Forever's padding below it; nil when no row shows.
+function adapter.TopLift(unitFrame)
+    if Plainly(unitFrame, "IsShowOnlyName") then return nil end
+    local debuffs = unitFrame.AurasFrame and unitFrame.AurasFrame.DebuffListFrame
+    if not Plainly(debuffs, "IsVisible") then return nil end
+    local height = debuffs.GetHeight and debuffs:GetHeight()
+    if IsSecret(height) or type(height) ~= "number" or height < 0 then
+        -- Unknown: assume one row, so debuffs are never covered.
+        local constants = type(NamePlateConstants) == "table" and NamePlateConstants or {}
+        height = Number(constants.AURA_ITEM_HEIGHT) or AURA_ROW_HEIGHT
+    end
+    local padding = tonumber(C_CVar.GetCVar("nameplateDebuffPadding")) or 0
+    return height + padding
+end
+
 -- The name box width from Forever's own layout tables, or the old layout's numbers.
 local function LayoutBoxWidth()
     local constants, options = NamePlateConstants, NamePlateSetupOptions
@@ -140,6 +179,10 @@ function adapter.GetName(_, nameplate)
     if not unitFrame or unitFrame:IsForbidden() or not Displayed(unitFrame, nameplate) then return end
     HINTS.boxWidth = adapter.NameBoxWidth(unitFrame)
     HINTS.span = ns.profile.display.tallBlizzard and adapter.Span(unitFrame, SPAN) or nil
+    local top = ns.profile.display.position == "TOP"
+    HINTS.topAnchor = top and adapter.TopAnchor(unitFrame) or nil
+    -- Also used when a secret name sends a left or right icon above the name.
+    HINTS.topLift = adapter.TopLift(unitFrame)
     return unitFrame.name, HINTS
 end
 

@@ -18,7 +18,6 @@ local ROW_ICON_WIDTH, ROW_ICON_HEIGHT = 44, 24
 local UNDO_SECONDS = 8
 local MY_GUILD_HEIGHT = 62
 local SEEN_DOT_SIZE = 10
-local RECENT_MENU_HEIGHT = 400       -- Seen guilds / players menus scroll past this
 
 local KIND_TEXT = {
     guilds = {
@@ -190,7 +189,7 @@ local function BuildPage(kind)
                 end
                 root:CreateTitle(text.recent)
                 -- A busy city fills the list faster than a screen is tall.
-                if root.SetScrollMode then root:SetScrollMode(RECENT_MENU_HEIGHT) end
+                if root.SetScrollMode then root:SetScrollMode(Widgets.MENU_MAX_HEIGHT) end
                 for _, entry in ipairs(seen) do
                     local label = Rules:Get(kind, entry.key) and L.RECENT_HAS_RULE:format(entry.name) or entry.name
                     root:CreateButton(label, function() ns.Options:EditRule(kind, entry.key, entry.name) end)

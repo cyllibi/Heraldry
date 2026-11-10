@@ -7,7 +7,7 @@
 ## IconTexture: Interface\AddOns\Heraldry\media\heraldry
 ## SavedVariables: HeraldryDB
 ## SavedVariablesPerCharacter: HeraldryCharDB
-## OptionalDeps: EllesmereUI, EllesmereUINameplates, Plater, ElvUI, TidyPlates_ThreatPlates, TwitchEmotes, TwitchEmotes_Giga
+## OptionalDeps: EllesmereUI, EllesmereUINameplates, Plater, ElvUI, TidyPlates_ThreatPlates, Platynator, TwitchEmotes, TwitchEmotes_Giga
 ## AddonCompartmentFunc: Heraldry_OnAddonCompartmentClick
 
 # Libraries for the minimap button (fetched by the packager; see .pkgmeta)

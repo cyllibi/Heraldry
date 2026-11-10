@@ -266,7 +266,7 @@ HeraldryDB = {
     guilds  = { ["pve/kachow"] = { name = "Kachow", icon = "lib:kachow" } },
     players = { ["somebody stormwind"] = { name = "Somebody Stormwind", icon = "none" } },
     custom  = { "guildcrest_wide" },
-    display = { enabled = true, friendly = true, enemy = true, position = "LEFT",
+    display = { enabled = true, friendly = true, enemy = true, position = "TOP",
                 scale = 1.0, alpha = 1.0, gap = 2, x = 0, y = 0,
                 world = true, dungeon = true, raid = true, pvp = true,
                 hideInCombat = false, strictPlayers = false, unknownPlates = true,
@@ -297,7 +297,15 @@ HeraldryCharDB = { version = 1, useCharacter = false, profile = nil }
     show static icons that animate on hover and a dot for guilds seen this session. A typed player name
     without a surname is accepted with a warning (most characters have one).
   - **Players:** the same for characters.
-  - **Display:** the options above, with a live preview using the real layout code. "Tall icon on Blizzard
+  - **Display:** the options above, with a live preview using the real layout code. The default position is
+    above the name, on every nameplate add-on: Blizzard's plates draw the target's buffs left of the bar, and
+    above works everywhere. On Blizzard's plates an icon above the name stays centred on the name and is lifted
+    past your debuff row (its height plus Forever's debuff padding, re-read on UNIT_AURA; one row assumed
+    if the height is secret); the row itself is pinned to the bar's left edge, so it isn't centred. On
+    names-only plates the icon sits on the raid marker's top edge, which is centred on the name. On
+    EllesmereUI enemy plates whose debuff row is in EUI's "top" slot on the name (EUI's defaults), the icon
+    is lifted by EUI's debuff icon size plus its debuff Y offset: EUI keeps its aura frames private, so the
+    lift is fixed (one row, with or without debuffs; a second row is still covered). A saved position is kept. "Tall icon on Blizzard
     nameplates" (off by default) makes the icon on Blizzard plates that show a health bar as tall as the name
     and bar together, just outside the bar (left of it and of the raid marker or classification icon when they
     show, or right of the level box); Size scales it from
@@ -313,7 +321,9 @@ HeraldryCharDB = { version = 1, useCharacter = false, profile = nil }
   went in chat; `/heraldry undo` puts them back, the rule lists' undo-not-confirm rule). Right-click on
   yourself edits the My guild icon instead of making a plain rule that would override it; on a player in no
   guild it opens the Guilds page, as with no target. Without a target, click opens the Players page, right-click the Guilds page, and
-  middle-click opens or closes the options. Shift-click (any button) turns icons on or off; drag moves it.
+  middle-click opens or closes the options. Shift-click (left or right) turns icons on or off, and
+  shift-middle-click opens or closes the options with or without a target (with one, nothing else reaches
+  them); drag moves it.
   A target an action can't use (an NPC, yourself, a hidden name) gets the same chat line as `/heraldry
   player` and `/heraldry guild`. The tooltip names the target and guild a click would act on, and what a
   middle-click would remove. The add-on

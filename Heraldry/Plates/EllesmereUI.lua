@@ -90,6 +90,28 @@ local function EnemyArrowWidth(eui, profile)
     return math.floor(width * scale + 0.5)
 end
 
+-- EUI's enemy debuff row in its default "top" slot sits on the name when the name is EUI's
+-- top text (also the default), centred and growing upwards. An icon placed above the name
+-- goes one row higher: EUI's debuff icon size plus its debuff Y offset. EUI keeps its
+-- aura frames private, so this is a fixed lift, not the row's live height: the icon sits
+-- in the same place with or without debuffs, and a second row of debuffs is still
+-- covered. Nil when the row isn't above the name.
+local DEFAULT_DEBUFF_SIZE, DEFAULT_DEBUFF_OFFSET = 26, 2
+local function TopLift(eui, profile, slot)
+    if slot ~= "textSlotTop" or (profile and profile.debuffSlot or "top") ~= "top" then return nil end
+    local size = type(eui.GetDebuffIconSize) == "function" and PlainNumber(eui.GetDebuffIconSize())
+        or profile and PlainNumber(profile.debuffIconSize) or DEFAULT_DEBUFF_SIZE
+    local offset = type(eui.GetDebuffYOffset) == "function" and PlainNumber(eui.GetDebuffYOffset())
+        or profile and PlainNumber(profile.debuffYOffset) or DEFAULT_DEBUFF_OFFSET
+    -- Plus the slot's own nudge, when the player moved EUI's debuff row up or down.
+    local nudge = 0
+    if type(eui.GetAuraSlotOffsets) == "function" then
+        local _, y = eui.GetAuraSlotOffsets("debuffSlot")
+        nudge = PlainNumber(y) or 0
+    end
+    return size + offset + nudge
+end
+
 local function EnemyHints(eui, plate, profile)
     wipe(ENEMY_HINTS)
     local slot = type(eui.FindNameSlot) == "function" and eui.FindNameSlot()
@@ -117,6 +139,7 @@ local function EnemyHints(eui, plate, profile)
         left, right = left + arrow, right + arrow
     end
     ENEMY_HINTS.edgeLeft, ENEMY_HINTS.edgeRight = left, right
+    ENEMY_HINTS.topLift = TopLift(eui, profile, slot)
     return ENEMY_HINTS
 end
 

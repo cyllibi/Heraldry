@@ -44,6 +44,8 @@ output of `/heraldry check` with the affected player targeted.
       guild: right-click opens the Guilds page, and the tooltip says so.
 - [ ] Shift-click with the tooltip up: icons on plates turn off, the tooltip says so; shift-click again turns
       them back on (with or without a target).
+- [ ] With a player targeted, shift-middle-click opens the options (the tooltip lists it last); again closes
+      them; icons stay as they were.
 - [ ] Drag it around the minimap, `/reload`: it stays where you left it.
 - [ ] Untick "Minimap button" on the first page: the button goes. `/heraldry minimap` brings it back and the
       checkbox follows.
@@ -71,7 +73,8 @@ output of `/heraldry check` with the affected player targeted.
 - [ ] The Library tab lists the game-icons set; searching "shield", "wolf" or "crown" finds them, and so do
       tag words such as "hunter", "bird", "undead", "healer", "tank", "frost" and "death knight". "ice" finds
       Ice cube but not Jeweled chalice.
-- [ ] The category dropdown appears on the Library tab with the themes (Shields & heraldry, Weapons, ...);
+- [ ] The category dropdown appears on the Library tab, reading "All categories", with the themes (Shields &
+      heraldry, Weapons, ...);
       picking one narrows the grid, search works inside it, and switching to Twitch Emotes and back resets it.
 - [ ] Scroll through all ~430 library icons: smooth, no hitch the second time through.
 - [ ] Sharpness at your own UI scale: the picker's large grid, and a plate icon with the Display Size at 3,
@@ -95,7 +98,9 @@ output of `/heraldry check` with the affected player targeted.
       Voice, ..."); "ice" doesn't find Sacrifice; "death grip" finds nothing (Forever has no death knights). An icon ID (`134400`) and a path (`Interface\Icons\INV_Misc_QuestionMark`)
       each show that icon; typing other digits ("1266") shows no icon, never a green square.
 - [ ] Twitch Emotes tab (TwitchEmotes installed): the category dropdown lists packs (BTTV+FFZ, Pepes, ...,
-      Giga Twitch Emotes and any other installed pack, by their titles); search by emote name works;
+      Giga Twitch Emotes and any other installed pack, by their titles), reading "All emote packs"; with many
+      packs the list scrolls with the mouse wheel and every pack down to the last is reachable; search by
+      emote name works;
       animated emotes play on hover.
 - [ ] Twitch packs (with a third-party pack that registers into TwitchEmotes installed): a wide static emote
       is wide, not tall, in the picker, a rule row and on a plate; an animated emote whose frames are narrower
@@ -166,6 +171,15 @@ Check icon position against the name, size, and that it moves with the plate.
       with "...": the icon sits clear of the first letter (`/heraldry check` shows the box width; compare
       with the bar). Repeat with Options > Nameplates size set to Large and to the Classic style.
 - [ ] Forever's level indicator and the icon don't overlap in the default position.
+- [ ] `/heraldry outline` with a target on Blizzard plates: red box on the name, green on the bar, blue on the
+      debuff row, yellow on the raid marker, for 15 seconds; chat lists each part's size and whether it shows.
+- [ ] "Reset display settings" puts the icon above the name. On Blizzard plates, an enemy with 3 or more of
+      your debuffs: the icon stays centred over the name, sits above the debuff row, and drops back
+      onto the name as they expire. A
+      names-only friendly player with a raid marker: the icon sits above the marker.
+- [ ] With EllesmereUI's plates and its defaults (debuffs on top): an enemy's icon above the name sits one
+      debuff row higher, centred, with or without your debuffs on it; with EUI's debuffs moved to the left
+      slot, it sits right on the name.
 - [ ] Display > "Tall icon on Blizzard nameplates": on plates with a health bar the icon becomes as tall as the
       name and bar together, just left of the bar, top level with the name's top and bottom with the bar's;
       Position Right puts it right of the level box. Mark a player with a raid marker: the icon moves left

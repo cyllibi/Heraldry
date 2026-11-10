@@ -30,6 +30,12 @@
                          anchorOnly = true anchor is not a name but a frame to sit above
                                            (generic fallback); host = the frame to draw on,
                                            lift = extra height above it
+                         topAnchor = frame  something centred just above the name (a
+                                           names-only plate's raid marker): an icon placed
+                                           above the name goes on its top edge instead
+                         topLift = n       extra height an icon placed above the name must
+                                           clear (Blizzard's debuff row), staying centred on
+                                           the name
                          span = { left, right, height, lift }
                                            Blizzard plates with a health bar: frames whose
                                            outer edges the icon sits beside on each side,
@@ -236,12 +242,13 @@ local function Placement(region, fontString, hints, display, size, iconWidth, ic
             end
             return "CENTER", left and -(textWidth / 2 + reach) or textWidth / 2 + reach, firstLine
         end
-        -- Text width unknown (secret name): centred above is never on the wrong side.
-        return "TOP", 0, gap + halfHeight
+        -- Text width unknown (secret name): centred above is never on the wrong side, and
+        -- it clears Blizzard's debuff row like a chosen "above" does.
+        return "TOP", 0, gap + halfHeight + (hints and hints.topLift or 0)
     end
 
     local point = position
-    local y = position == "TOP" and gap + halfHeight or -(gap + halfHeight)
+    local y = position == "TOP" and gap + halfHeight + (hints and hints.topLift or 0) or -(gap + halfHeight)
     if not tight and textWidth and justify == "LEFT" then
         return point .. "LEFT", textWidth / 2, y
     elseif not tight and textWidth and justify == "RIGHT" then
@@ -279,7 +286,13 @@ function Plates.Layout(region, anchor, hints, spec, display)
         if IsSecret(size) or not size or size <= 0 then size = hints and hints.fontSize or DEFAULT_FONT_SIZE end
         height = size * display.scale
         width = height * spec.aspect
-        point, x, y = Placement(region, anchor, hints, display, size, width, height)
+        local topAnchor = display.position == "TOP" and hints and hints.topAnchor
+        if topAnchor then
+            -- Ride on top of what Blizzard centres above the name (the raid marker).
+            anchor, point, x, y = topAnchor, "TOP", 0, display.gap + height / 2
+        else
+            point, x, y = Placement(region, anchor, hints, display, size, width, height)
+        end
     end
     x, y = x + display.x, y + display.y
 
@@ -499,6 +512,15 @@ local function OnUnitEvent(_, unit)
     if units[unit] then Plates.MarkUnit(unit) end
 end
 
+-- Auras only move an icon placed above the name on Blizzard's plates (past the debuff row,
+-- whose height follows the auras): skip every other plate, which in a raid pull is most.
+local function OnAuraEvent(_, unit)
+    local adapter = unitAdapter[unit]
+    if unitRegion[unit] and adapter and adapter.id == "Blizzard" and ns.profile.display.position == "TOP" then
+        Plates.MarkUnit(unit)
+    end
+end
+
 -- Adapters whose add-on is loaded, in registration order. Runs once, at login.
 function Plates:EnableAdapters()
     for _, adapter in ipairs(adapters) do
@@ -534,6 +556,8 @@ ns.RegisterEvent("PLAYER_LOGIN", function()
     -- Target arrows and raid markers beside the name come and go with these.
     ns.RegisterEvent("PLAYER_TARGET_CHANGED", Plates.MarkAll)
     ns.RegisterEvent("RAID_TARGET_UPDATE", Plates.MarkAll)
+    -- Blizzard's debuff row above the name grows and shrinks with the unit's auras.
+    ns.RegisterEvent("UNIT_AURA", OnAuraEvent)
     ns.RegisterEvent("DISPLAY_SIZE_CHANGED", Relayout)
     ns.RegisterEvent("UI_SCALE_CHANGED", Relayout)
 end)

@@ -81,6 +81,7 @@ player.
   | Right-click | Choose an icon for your target's guild | Open the Guilds page |
   | Middle-click | Remove your target's player and guild icons | Open or close the options |
   | Shift-click | Show or hide icons | Show or hide icons |
+  | Shift-middle-click | Open or close the options | Open or close the options |
 
   `/heraldry undo` puts back what a middle-click removed. Drag the button to move it. The add-on drawer entry
   works the same way. Minimap button collectors (EllesmereUI's minimap, MinimapButtonButton) pick it up.
@@ -91,7 +92,8 @@ player.
 - `/heraldry guild` picks an icon for your target's guild; `/heraldry player` for your target;
   `/heraldry try` shows your preview icon on your target for 10 seconds.
 - `/heraldry check` shows what the game tells add-ons about your target, for bug reports; the same report
-  is under Diagnostics on the options' first page.
+  is under Diagnostics on the options' first page. `/heraldry outline` draws coloured boxes over your target's
+  Blizzard nameplate parts (name, health bar, debuff row, raid marker) for 15 seconds.
 - In the icon picker, right-click an icon to make it a favorite; arrow keys and Enter work too.
 
 In dungeons, raids and combat the game can hide names and guilds from add-ons. Heraldry then skips what it

@@ -98,7 +98,7 @@ local function CategoryOptions()
         return libraryCategoryOptions
     end
     if not categoryOptions then
-        categoryOptions = { { value = false, text = L.PICKER_ALL_CATEGORIES } }
+        categoryOptions = { { value = false, text = L.PICKER_ALL_PACKS } }
         local _, categories = Icons:GetTwitchEmotes()
         for _, category in ipairs(categories) do
             categoryOptions[#categoryOptions + 1] = { value = category.key, text = category.label }

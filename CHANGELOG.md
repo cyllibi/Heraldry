@@ -4,6 +4,11 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Changed
+- Icons now go above the name by default (on Blizzard's plates, above your debuffs and the raid marker).
+  Settings saved before keep their position; "Reset display settings" on the Display page applies the new
+  default.
+
 ### Added
 - Icons next to the names of chosen guilds and players on nameplates, with player rules (including
   "no icon"), guild rules per ruleset, and a "my guild" rule that follows your character's guild.
@@ -28,5 +33,6 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
 - A minimap button (LibDBIcon, so minimap button collectors such as MinimapButtonButton pick it up), with
   `/heraldry minimap` to show or hide it. It is a shortcut: with a target, click and right-click choose icons
   for the target and their guild and middle-click removes them; without one, they open the Players page, the
-  Guilds page and the options; shift-click shows or hides icons.
+  Guilds page and the options; shift-click shows or hides icons, and shift-middle-click opens the options
+  either way.
 - Guild and player name boxes complete names seen on nameplates this session; the Seen lists scroll.

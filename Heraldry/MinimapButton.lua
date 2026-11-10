@@ -16,7 +16,9 @@
     middle-click  remove the target's player and        the options (open or close)
                   guild icons, if any (/heraldry undo
                   puts them back)
-    shift-click   show or hide icons (any button, target or not)
+    shift-click   show or hide icons (left or right button, target or not)
+    shift-middle  the options (open or close), target or not: with a target, the only
+                  click that reaches them
   A target the action can't use (an NPC, yourself, a hidden name) gets a chat line saying
   why, as /heraldry player and /heraldry guild do. Right-click on yourself edits the
   My guild icon, which a plain rule for your own guild would silently override; on a
@@ -137,7 +139,7 @@ end
 -- button: "LeftButton", "RightButton" or "MiddleButton" (others count as left).
 function MinimapButton.Click(button)
     if IsShiftKeyDown() then
-        ns.ToggleIcons()
+        if button == "MiddleButton" then ns.Options:Toggle() else ns.ToggleIcons() end
         return
     end
     local hasTarget = UnitExists("target")
@@ -187,6 +189,7 @@ function MinimapButton.ClickLines()
         #removes > 0 and L.MINIMAP_TIP_MIDDLE_REMOVES:format(table.concat(removes, L.LIST_SEPARATOR))
             or L.MINIMAP_TIP_MIDDLE_NOTHING,
         L.MINIMAP_TIP_SHIFT,
+        L.MINIMAP_TIP_SHIFT_MIDDLE,
     }
 end
 

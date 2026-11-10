@@ -1,7 +1,12 @@
 --[[ Diagnostics.lua
   The report behind /heraldry check and the Diagnostics box on the options' first page:
   what the game tells add-ons right now about the player and the target, and what
-  Heraldry made of it. Secret values are shown as "<hidden>", never compared. ]]
+  Heraldry made of it. Secret values are shown as "<hidden>", never compared.
+
+  /heraldry outline draws translucent boxes over the parts of the target's Blizzard
+  nameplate that Heraldry places icons against (name, health bar, debuff row, raid
+  marker) for a few seconds, so their real positions can be seen in game without
+  needing debuffs or a raid marker up. ]]
 
 local _, ns = ...
 local L = ns.L
@@ -83,5 +88,76 @@ function Diagnostics:Lines()
     else
         Add(L.CHECK_PLATE_NONE)
     end
+    return lines
+end
+
+--------------------------------------------------------------------------------
+-- /heraldry outline
+--------------------------------------------------------------------------------
+local OUTLINE_SECONDS = 15
+local OUTLINE_PARTS = {
+    -- key, colour, how to find it on a Blizzard UnitFrame
+    { "OUTLINE_NAME", { 1, 0.2, 0.2 }, function(f) return f.name end },
+    { "OUTLINE_BAR", { 0.2, 1, 0.2 }, function(f) return f.HealthBarsContainer end },
+    { "OUTLINE_DEBUFFS", { 0.3, 0.5, 1 }, function(f) return f.AurasFrame and f.AurasFrame.DebuffListFrame end },
+    { "OUTLINE_RAID", { 1, 1, 0.2 }, function(f) return f.RaidTargetFrame end },
+}
+local outlineBoxes = {}   -- textures in use, hidden again by the timer
+local outlinePools = setmetatable({}, { __mode = "k" }) -- unit frame -> its boxes, reused
+local outlineGeneration = 0
+
+local function Size(region, method)
+    if not (region and region[method]) then return L.CHECK_NIL end
+    local value = region[method](region)
+    if IsSecret(value) then return L.CHECK_SECRET end
+    return type(value) == "number" and ("%.0f"):format(value) or L.CHECK_NIL
+end
+
+local function Plain(region, method)
+    if not (region and type(region[method]) == "function") then return L.CHECK_NIL end
+    return Show(region[method](region))
+end
+
+-- Returns the lines to print; draws the boxes when the target has a Blizzard plate.
+function Diagnostics:OutlineTarget()
+    if not UnitExists("target") then return { L.TARGET_NONE } end
+    local nameplate = C_NamePlate.GetNamePlateForUnit("target")
+    local unitFrame = nameplate and nameplate.UnitFrame
+    if not unitFrame or unitFrame:IsForbidden() then return { L.CHECK_NO_PLATE } end
+
+    for _, box in ipairs(outlineBoxes) do box:Hide() end
+    wipe(outlineBoxes)
+    local lines = { L.OUTLINE_HEADER:format(OUTLINE_SECONDS) }
+    local shown = unitFrame:IsVisible()
+    if IsSecret(shown) or not shown then
+        -- Another nameplate add-on draws this plate and hides Blizzard's: the boxes can't show.
+        lines[#lines + 1] = L.OUTLINE_HIDDEN
+    end
+    local pool = outlinePools[unitFrame] or {}
+    outlinePools[unitFrame] = pool
+    for index, part in ipairs(OUTLINE_PARTS) do
+        local key, colour, find = part[1], part[2], part[3]
+        local region = find(unitFrame)
+        if region then
+            local box = pool[index] or unitFrame:CreateTexture(nil, "OVERLAY", nil, 7)
+            pool[index] = box
+            box:ClearAllPoints()
+            box:SetColorTexture(colour[1], colour[2], colour[3], 0.35)
+            box:SetAllPoints(region)
+            box:Show()
+            outlineBoxes[#outlineBoxes + 1] = box
+            lines[#lines + 1] = L.OUTLINE_PART:format(L[key], Size(region, "GetWidth"), Size(region, "GetHeight"),
+                Plain(region, region.IsVisible and "IsVisible" or "IsShown"))
+        else
+            lines[#lines + 1] = L.OUTLINE_MISSING:format(L[key])
+        end
+    end
+    outlineGeneration = outlineGeneration + 1
+    local generation = outlineGeneration
+    C_Timer.After(OUTLINE_SECONDS, function()
+        if generation ~= outlineGeneration then return end
+        for _, box in ipairs(outlineBoxes) do box:Hide() end
+        wipe(outlineBoxes)
+    end)
     return lines
 end

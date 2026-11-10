@@ -13,6 +13,7 @@ ns.Widgets = Widgets
 Widgets.LABEL_WIDTH = 120       -- left column for slider and dropdown labels
 Widgets.SLIDER_WIDTH = 180
 Widgets.ROW_SPACING = 6
+Widgets.MENU_MAX_HEIGHT = 400   -- dropdown and button menus scroll past this (e.g. 80 emote packs)
 local BUTTON_PADDING = 24
 local MIN_BUTTON_WIDTH = 80
 
@@ -128,6 +129,8 @@ function Widgets.Dropdown(parent, label, width, options, get, set)
         dropdown:SetPoint("LEFT")
     end
     dropdown:SetupMenu(function(_, root)
+        -- A long list scrolls instead of running off the screen.
+        if root.SetScrollMode then root:SetScrollMode(Widgets.MENU_MAX_HEIGHT) end
         for _, option in ipairs(options()) do
             root:CreateRadio(option.text, function() return get() == option.value end, function()
                 set(option.value)

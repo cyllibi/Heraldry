@@ -333,10 +333,12 @@ test("profile normalization", function()
     eq(#profile.custom, 2, "custom deduped and validated")
     eq(profile.display.scale, DB.RANGES.scale.max, "clamped")
     eq(profile.display.alpha, DB.RANGES.alpha.min, "clamped")
-    eq(profile.display.position, "LEFT", "invalid position reset")
+    eq(profile.display.position, "TOP", "invalid position reset to the default: above the name")
     eq(profile.display.gap, DB.DISPLAY_DEFAULTS.gap, "wrong type reset")
     eq(profile.display.enemy, true, "missing filled")
     eq(DB.NormalizeProfile(nil).display.enabled, true, "nil becomes a fresh profile")
+    eq(DB.NormalizeProfile(nil).display.position, "TOP", "a fresh profile: above the name")
+    eq(DB.NormalizeProfile({ display = { position = "LEFT" } }).display.position, "LEFT", "a chosen position stays")
 end)
 
 test("character profile copy semantics", function()
@@ -588,8 +590,11 @@ test("minimap clicks: target shortcuts, pages without a target, middle-click cle
     Click("LeftButton"); eq(ns.profile.display.enabled, not enabled, "shift-click toggles icons")
     stub.units.target = { player = true, name = "Goober", surname = "Ppea", guild = "Clickers" }
     local count = #calls
-    Click("RightButton"); eq(ns.profile.display.enabled, enabled, "with a target too, any button")
+    Click("RightButton"); eq(ns.profile.display.enabled, enabled, "with a target too, left or right")
     eq(#calls, count, "shift-click does nothing else")
+    Click("MiddleButton"); eq(last(), "toggle", "shift-middle-click: the options, even with a target")
+    eq(ns.profile.display.enabled, enabled, "and leaves icons alone")
+    eq(ns.MinimapButton.ClickLines()[5], L.MINIMAP_TIP_SHIFT_MIDDLE, "the tooltip says so with a target")
     shift = false
 
     local playerKey = Rules:TargetSubject("players")
@@ -671,6 +676,66 @@ test("blizzard plates: the name box comes from the plate, then Forever's layout"
     near(adapter.NameBoxWidth({}), 110 * 1.2 - 8, "the old layout when Forever's tables are missing")
 
     NamePlateConstants, NamePlateSetupOptions, C_CVar = saved[1], saved[2], saved[3]
+end)
+
+test("/heraldry outline: boxes over the target's Blizzard plate parts", function()
+    local saved = { C_NamePlate, C_Timer }
+    if not ns.Diagnostics then assert(loadfile(ADDON .. "/Diagnostics.lua"))(ADDON, ns) end
+    stub.units.target = nil
+    eq(ns.Diagnostics:OutlineTarget()[1], L.TARGET_NONE, "no target")
+    stub.units.target = { player = true, name = "Out", surname = "Line" }
+    C_NamePlate = { GetNamePlateForUnit = function() return nil end }
+    eq(ns.Diagnostics:OutlineTarget()[1], L.CHECK_NO_PLATE, "no plate")
+    local unitFrame = { IsForbidden = function() return false end, CreateTexture = function() return stub.Region() end,
+        IsVisible = function() return true end }
+    unitFrame.name = { GetWidth = function() return 120 end, GetHeight = function() return stub.Secret() end,
+        IsVisible = function() return true end }
+    unitFrame.HealthBarsContainer = { GetWidth = function() return 166 end, GetHeight = function() return 10 end,
+        IsVisible = function() return true end }
+    C_NamePlate = { GetNamePlateForUnit = function() return { UnitFrame = unitFrame } end }
+    local timer
+    C_Timer = { After = function(_, fn) timer = fn end }
+    local lines = ns.Diagnostics:OutlineTarget()
+    eq(lines[2], L.OUTLINE_PART:format(L.OUTLINE_NAME, "120", L.CHECK_SECRET, "true"), "a secret height shows as hidden")
+    eq(lines[3], L.OUTLINE_PART:format(L.OUTLINE_BAR, "166", "10", "true"))
+    eq(lines[4], L.OUTLINE_MISSING:format(L.OUTLINE_DEBUFFS), "parts the plate lacks are listed")
+    truthy(timer, "the boxes go away on a timer")
+    unitFrame.IsVisible = function() return false end
+    eq(ns.Diagnostics:OutlineTarget()[2], L.OUTLINE_HIDDEN, "another add-on's plate: says the boxes won't show")
+    timer()
+    stub.units.target = nil
+    C_NamePlate, C_Timer = saved[1], saved[2]
+end)
+
+test("ellesmereui: an icon above the name clears EUI's top debuff row", function()
+    local adapter
+    local copy = setmetatable({ Plates = { RegisterAdapter = function(_, a) adapter = a end } }, { __index = ns })
+    assert(loadfile(ADDON .. "/Plates/EllesmereUI.lua"))(ADDON, copy)
+    local saved = EllesmereNameplates_NS
+    local profile = { debuffSlot = "top" }
+    local slot = "textSlotTop"
+    local enemy = { name = stub.Region() }
+    EllesmereNameplates_NS = {
+        db = { profile = profile }, friendlyPlates = {}, plates = { nameplate1 = enemy },
+        FindNameSlot = function() return slot end,
+        GetDebuffIconSize = function() return 30 end, GetDebuffYOffset = function() return 4 end,
+    }
+    local _, hints = adapter.GetName("nameplate1", {})
+    eq(hints.topLift, 30 + 4, "EUI's debuff icon size plus its offset")
+    EllesmereNameplates_NS.GetAuraSlotOffsets = function() return 0, 5 end
+    _, hints = adapter.GetName("nameplate1", {})
+    eq(hints.topLift, 30 + 4 + 5, "plus the debuff slot's own nudge")
+    EllesmereNameplates_NS.GetAuraSlotOffsets = nil
+    EllesmereNameplates_NS.GetDebuffIconSize, EllesmereNameplates_NS.GetDebuffYOffset = nil, nil
+    _, hints = adapter.GetName("nameplate1", {})
+    eq(hints.topLift, 26 + 2, "EUI's defaults when its getters are missing")
+    profile.debuffSlot = "left"
+    _, hints = adapter.GetName("nameplate1", {})
+    eq(hints.topLift, nil, "debuffs beside the bar: no lift")
+    profile.debuffSlot, slot = "top", "textSlotCenter"
+    _, hints = adapter.GetName("nameplate1", {})
+    eq(hints.topLift, nil, "the name isn't EUI's top text, so the row isn't above it")
+    EllesmereNameplates_NS = saved
 end)
 
 test("seen lists are capped but the seen mark is not", function()
@@ -815,6 +880,7 @@ end)
 --------------------------------------------------------------------------------
 local function display(overrides)
     local result = CopyTable(DB.DISPLAY_DEFAULTS)
+    result.position = "LEFT" -- the placement cases below are written for left of the name
     for key, value in pairs(overrides or {}) do result[key] = value end
     return result
 end
@@ -911,6 +977,57 @@ test("blizzard plates: the tall icon's span from the bar and Forever's layout", 
     eq(adapter.Span(unitFrame, {}), nil, "nor does a bar whose visibility is secret")
 
     NamePlateConstants, NamePlateSetupOptions = saved[1], saved[2]
+end)
+
+test("placement: above the name clears Blizzard's raid marker and debuff row", function()
+    local marker = stub.Region()
+    local region = Plates.NewRegion(CreateFrame())
+    Plates.Layout(region, name("Fast Racer"), { topAnchor = marker }, square, display({ position = "TOP" }))
+    local topLeft, bottomRight = region.texture.points[1], region.texture.points[2]
+    eq(topLeft[2], marker, "anchored to the marker centred above the name")
+    eq(topLeft[3], "TOP")
+    eq((topLeft[4] + bottomRight[4]) / 2, 0, "centred")
+    eq((topLeft[5] + bottomRight[5]) / 2, 2 + 6, "gap + half the 12 px icon above its top")
+    local point = place(name("Fast Racer"), { topAnchor = marker }, { position = "LEFT" })
+    eq(point, "CENTER", "only for above the name")
+    local x, y
+    point, x, y = place(name("Fast Racer"), { topLift = 30 }, { position = "TOP" })
+    eq(point, "TOP", "the debuff row: still on the name, so still centred on it")
+    eq(x, 0)
+    eq(y, 2 + 6 + 30, "lifted past the row")
+    local _, _, below = place(name("Fast Racer"), { topLift = 30 }, { position = "BOTTOM" })
+    eq(below, -(2 + 6), "below the name ignores the lift")
+    point = place(name("Fast Racer"), nil, { position = "TOP" })
+    eq(point, "TOP", "nothing above the name: on the name")
+end)
+
+test("blizzard plates: what an icon above the name goes on top of", function()
+    local adapter
+    local copy = setmetatable({ Plates = { RegisterAdapter = function(_, a) adapter = a end } }, { __index = ns })
+    assert(loadfile(ADDON .. "/Plates/Blizzard.lua"))(ADDON, copy)
+    local function Frame(method, value) return { [method] = function() return value end } end
+    local savedCVar = C_CVar
+    C_CVar = { GetCVar = function(cvar) return cvar == "nameplateDebuffPadding" and "3" or nil end }
+    local debuffs = Frame("IsVisible", true)
+    debuffs.GetHeight = function() return 26 end
+    local raid = Frame("IsShown", true)
+    local unitFrame = { AurasFrame = { DebuffListFrame = debuffs }, RaidTargetFrame = raid }
+    eq(adapter.TopAnchor(unitFrame), nil, "with a bar, nothing to anchor to")
+    eq(adapter.TopLift(unitFrame), 26 + 3, "the debuff row's height plus Forever's padding")
+    debuffs.GetHeight = function() return 0 end
+    eq(adapter.TopLift(unitFrame), 3, "an empty row: just the padding")
+    debuffs.GetHeight = function() return stub.Secret() end
+    eq(adapter.TopLift(unitFrame), 25 + 3, "a secret height: one row assumed")
+    debuffs.IsVisible = function() return false end
+    eq(adapter.TopLift(unitFrame), nil, "no debuff row: no lift")
+    debuffs.IsVisible = function() return stub.Secret() end
+    eq(adapter.TopLift(unitFrame), nil, "a secret answer counts as not shown")
+    unitFrame.IsShowOnlyName = function() return true end
+    eq(adapter.TopAnchor(unitFrame), raid, "names only: the raid marker above the name")
+    eq(adapter.TopLift(unitFrame), nil, "and no debuff lift")
+    raid.IsShown = function() return false end
+    eq(adapter.TopAnchor(unitFrame), nil, "no marker: on the name")
+    C_CVar = savedCVar
 end)
 
 test("placement: tight box", function()

@@ -3,6 +3,7 @@
   /heraldry guild     pick an icon for your target's guild
   /heraldry player    pick an icon for your target
   /heraldry check     what the client exposes about your target, for bug reports
+  /heraldry outline   outline the parts of your target's Blizzard nameplate for 15 seconds
   /heraldry try       show the Display page's preview icon on your target for 10 seconds
   /heraldry minimap   show or hide the minimap button
   /heraldry undo      put back what the minimap button's middle-click removed
@@ -42,6 +43,9 @@ local COMMANDS = {
     guild = function() TargetRule("guilds") end,
     player = function() TargetRule("players") end,
     check = Check,
+    outline = function()
+        for _, line in ipairs(ns.Diagnostics:OutlineTarget()) do ns.Print(line) end
+    end,
     try = Try,
     minimap = ToggleMinimap,
     undo = function() ns.MinimapButton.Undo() end,
