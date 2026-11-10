@@ -169,7 +169,8 @@ Check icon position against the name, size, and that it moves with the plate.
 - [ ] Display > "Tall icon on Blizzard nameplates": on plates with a health bar the icon becomes as tall as the
       name and bar together, just left of the bar, top level with the name's top and bottom with the bar's;
       Position Right puts it right of the level box. Mark a player with a raid marker: the icon moves left
-      of the marker (and of a PvP or elite icon when one shows). The checkbox dims with Position Top or Bottom. Size shrinks or grows it from there. Names-only friendly
+      of the marker (and of a PvP or elite icon when one shows). The checkbox dims with Position Top or Bottom.
+      An enemy under crowd control with Position Right: Blizzard's crowd-control icon draws over Heraldry's. Size shrinks or grows it from there. Names-only friendly
       plates keep the normal icon. Try the Classic style and a Large nameplate size too. With EllesmereUI's
       plates loaded the option changes nothing, and the preview doesn't show it.
 

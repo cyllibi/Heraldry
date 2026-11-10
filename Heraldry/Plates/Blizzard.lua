@@ -27,7 +27,12 @@
   like a crest. That needs the bar to be shown (not a names-only plate) and its
   height and the name's: the bar's own height when readable, else NamePlateSetupOptions'
   healthBarHeight, healthBarFontHeight and healthBarToNameAboveSpacing. Styles that put
-  the name inside the bar use the bar's height alone. ]]
+  the name inside the bar use the bar's height alone.
+
+  Blizzard's crowd-control and loss-of-control icons (AurasFrame, right of the bar) may
+  overlap a right-side icon. They win: Heraldry's icon is a texture on the UnitFrame
+  itself, and AurasFrame is a child frame a level up, so it always draws on top. Keep it
+  that way (never raise the icon onto its own frame above the plate). ]]
 
 local _, ns = ...
 local L = ns.L
