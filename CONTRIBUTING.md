@@ -97,6 +97,8 @@ and `LICENSE`; `tools`, `tests`, `HeraldryDev` and the docs are left out, and th
 build type `version-forever` and game version `1.60.1`. (`-z` skips the zip only because Git Bash has no
 `zip`; the GitHub workflow makes it.) That check predates the `.pkgmeta` externals (the minimap libraries)
 and the game-icons textures: a local run now also needs `svn` for the WowAce externals, so it has not been
-repeated. Before the first release, run the packager once (locally with svn, or the GitHub workflow without
+repeated. The `Package (dry run)` workflow (Actions tab, Run workflow) builds the zip on GitHub without uploading
+it and attaches it to the run as a download: use it to check a package, externals included. Before the
+first release, run the packager once (locally with svn, or the GitHub workflow without
 uploading) and check that `Heraldry/Libs/` holds the four libraries the TOC lists, that
 `Heraldry/media/heraldry.tga` and `media/library/game-icons/` are in, and that `CREDITS.md` ships.

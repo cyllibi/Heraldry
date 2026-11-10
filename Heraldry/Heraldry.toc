@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Heraldry
 ## Notes: Shows an icon next to the names of chosen guilds and players on nameplates.
-## Author: Kachow
+## Author: cyllibi
 ## Version: @project-version@
 ## Category: Nameplates
 ## IconTexture: Interface\AddOns\Heraldry\media\heraldry

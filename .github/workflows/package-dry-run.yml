@@ -1,0 +1,26 @@
+# Builds the add-on package without uploading it, for checking what a release would contain
+# (the minimap libraries fetched from .pkgmeta's externals, the docs and tools left out).
+# Run it from the Actions tab; the zip is attached to the run as an artifact.
+name: Package (dry run)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Package without uploading
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -d
+
+      - name: Attach the package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Heraldry-package
+          path: .release/*.zip

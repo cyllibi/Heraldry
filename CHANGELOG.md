@@ -4,24 +4,24 @@ All notable changes to Heraldry. The format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
-### Changed
-- Icons now go above the name by default (on Blizzard's plates, above your debuffs and the raid marker).
-  Settings saved before keep their position; "Reset display settings" on the Display page applies the new
-  default.
+First release.
 
 ### Added
 - Icons next to the names of chosen guilds and players on nameplates, with player rules (including
   "no icon"), guild rules per ruleset, and a "my guild" rule that follows your character's guild.
-- EllesmereUI Nameplates support (full plates, name-only and enemy plates) and Blizzard nameplates, where the
-  icon can optionally span the name and health bar.
+- Works on its own with Blizzard's nameplates, where the icon can optionally span the name and health bar.
+  EllesmereUI Nameplates is recommended for a nicer look and fully supported (full plates, name-only and
+  enemy plates).
+- Icons sit above the name by default, clear of your debuffs and raid markers; left, right and below are
+  options, with size, gap, offsets and opacity.
 - Icon sources: the Heraldry library (static and animated), built-in game icons
   named and searchable at once by every Forever player ability that uses them (in the client's language) and
   by file name, emotes from the TwitchEmotes add-on, and custom image files.
 - Options under AddOns: Guilds, Players, Display (with a live preview), Sharing and Custom icons.
 - Account-wide settings with an optional per-character copy.
 - Export and import of rules as text, with a preview before applying.
-- `/heraldry`, `/heraldry guild`, `/heraldry player`, `/heraldry check`, and the same check as a Diagnostics
-  box in the options.
+- `/heraldry`, `/heraldry guild`, `/heraldry player`, `/heraldry check` (the same report is a Diagnostics
+  box in the options), `/heraldry outline`, `/heraldry undo`.
 - Plater, ElvUI and Threat Plates adapters, and a fallback that puts the icon above the nameplate for any
   other nameplate add-on.
 - EllesmereUI skinning and a Heraldry section in EllesmereUI's options.
