@@ -1,6 +1,7 @@
 # Builds the add-on package without uploading it, for checking what a release would contain
 # (the minimap libraries fetched from .pkgmeta's externals, the docs and tools left out).
-# Run it from the Actions tab; the zip is attached to the run as an artifact.
+# Run it from the Actions tab; the run's log lists every file that would ship (the packager
+# removes its release folder after a run that doesn't upload).
 name: Package (dry run)
 
 on:
@@ -19,10 +20,3 @@ jobs:
         with:
           args: -d
 
-      - name: Attach the package
-        uses: actions/upload-artifact@v4
-        with:
-          name: Heraldry-package
-          # The whole release folder: the add-on as packaged, and the zip when the packager keeps it.
-          path: .release/
-          if-no-files-found: error
