@@ -18,6 +18,7 @@ manual-changelog:
 
 ignore:
   - .github
+  - docs
   - .reviews
   - .tools
   - tests

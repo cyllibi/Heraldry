@@ -23,4 +23,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Heraldry-package
-          path: .release/*.zip
+          # The whole release folder: the add-on as packaged, and the zip when the packager keeps it.
+          path: .release/
+          if-no-files-found: error
