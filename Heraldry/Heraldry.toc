@@ -4,6 +4,7 @@
 ## Author: cyllibi
 ## Version: @project-version@
 ## Category: Nameplates
+## X-Curse-Project-ID: 1797885
 ## IconTexture: Interface\AddOns\Heraldry\media\heraldry
 ## SavedVariables: HeraldryDB
 ## SavedVariablesPerCharacter: HeraldryCharDB
